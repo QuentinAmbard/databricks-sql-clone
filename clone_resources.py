@@ -15,7 +15,7 @@ def get_client(config_file):
             if "sql_database_name" in target:
                 client.sql_database_name = target["sql_database_name"]
             targets.append(client)
-        return source, targets
+        return source, targets, config["delete_target_dashboards"]
 
 
 parser = argparse.ArgumentParser()
@@ -23,7 +23,7 @@ parser.add_argument("--config_file", default="config.json", required=False,
                     help="configuration file containing credential and dashboard to clone")
 args = parser.parse_args()
 
-source_client, target_clients = get_client(args.config_file)
+source_client, target_clients, delete_target_dashboards = get_client(args.config_file)
 
 for target_client in target_clients:
-    copy_dashboard.delete_and_clone_dashboards_with_tags(source_client, target_client, source_client.dashboard_tags)
+    copy_dashboard.delete_and_clone_dashboards_with_tags(source_client, target_client, source_client.dashboard_tags, delete_target_dashboards)

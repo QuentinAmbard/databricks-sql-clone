@@ -1,4 +1,5 @@
-# Databricks utils
+# Databricks dashboard clone
+Unofficial project to allow Databricks SQL dashboard copy from one workspace to another.
 
 ## Resource clone
 
