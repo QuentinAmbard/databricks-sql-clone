@@ -1,0 +1,6 @@
+state.json
+.idea
+utils/__pycache__
+secret.json
+config.json
+*.iml
