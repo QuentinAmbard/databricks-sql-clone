@@ -10,36 +10,38 @@ Create a file named `config.json` and put your credential. You need to define th
 {
   "source": {
     "url": "https://xxxxx.cloud.databricks.com",
-    "token": "xxxxxxx",
-    "dashboard_tags": ["field_demos"] /* Dashboards having any of these tags matching will be deleted from target and cloned */
+    "token": "xxxxxxx", /* your PAT token*/
+    "dashboard_tags": ["field_demos"] /* Dashboards having any of these tags matching will be first DELETED from the targets and then cloned from the SOURCE */
   },
-  "delete_target_dashboards": true, /* This will erase the dashboard in the targets having the same tags. If false, won't do anything. */
+  "delete_target_dashboards": true, /* erase the dashboards in the targets having the same tags. If false, won't do anything (might endup with duplicates). */
   "targets": [
     {
       "url": "https:/xxxxxxx.cloud.databricks.com",
       "token": "xxxxxxx",
-      "data_source_id": "xxxxxxxx-xxxx-xxxx-xxxx-a24894da3eaa"
+      "endpoint_id": "xxxxxxxxxx4da979", /* Optional, will use the first endpoint available if not set. At least 1 endpoint must exist in the workspace.*/
+      "permissions":[ /* Optional, force the permissions to this set of values. In this example add a CAN_RUN for All Users.*/
+        {
+          "user_name": "xxx@xxx.com",
+          "permission_level": "CAN_MANAGE"
+        },
+        {
+          "group_name": "users",
+          "permission_level": "CAN_RUN"
+        }
+      ]
     },
     {
       "url": "https://xxxxxxx.azuredatabricks.net",
-      "token": "xxxxxxx",
-      "data_source_id": "xxxxxxxx-xxxx-xxxx-xxxx-025befd8b98d"
+      "token": "xxxxxxx"
     }
   ]
 }
 ```
-`data_source_id` is required and is the ID of the data source we'll attach to the queries/dashboard.
-**This is NOT the endpoint ID that you can find in the URL**
 
-To find your `data_source_id` on each target workspace:
+`endpoint_id` the ID of the endpoint we'll attach to the queries.
 
-- open your browser, edit an existing DBSQL query. 
-- Assign the query to the SQL endpoint you want to be using
-- Open the javascript console=>Network=>Filter on Fetch/XHR. 
-- Click on the "Save" button of the DBSQL Query
-- Open the corresponding Js query in the console 
-  - click on the request "Preview"
-  - search for `data_source_id`. That's the value you need to get
+To find your `endpoint_id` on each target workspace, click in one of your endpoint.
+The endpoint ID is in the URL: `https://xxxx.azuredatabricks.net/sql/endpoints/<endpoint_id>?o=xxxx`
 
 ### Run:
 Run the `clone_resources.py` script to clone all the ressources
@@ -63,6 +65,6 @@ By default, `copy_dashboard.delete_and_clone_dashboards_with_tags(source_client,
 It will first DELETE all the dashboard in the dest with the given tags, 
 and then clone the dashboard from the source. 
 
-If you need to copy without deleting, set `delete_target_dashboards` to true.
+If you need to copy without deleting, set `delete_target_dashboards` to false.
 
 

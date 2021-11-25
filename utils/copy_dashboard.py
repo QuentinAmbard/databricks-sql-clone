@@ -79,6 +79,9 @@ def duplicate_dashboard(client: Client, dashboard, state):
     data = {"name": dashboard["name"], "tags": dashboard["tags"]}
     new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data).json()
     print(f"     dashboard created {new_dashboard}...")
+    if client.permisions_defined():
+        permissions = requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions).json()
+        print(f"     Permissions set to {permissions}")
     for widget in dashboard["widgets"]:
         print(f"          cloning widget {widget}...")
         visualization_id_clone = None
@@ -130,6 +133,10 @@ def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboar
 
             print(f"     cloning query {q_creation}...")
             new_query = requests.post(target_client.url+"/api/2.0/preview/sql/queries", headers = target_client.headers, json = q_creation).json()
+            if target_client.permisions_defined():
+                permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
+                print(f"     Permissions set to {permissions}")
+
             visualizations = clone_query_visualization(target_client, q, new_query)
             state[clone_state_id][dashboard_id][query_id] = {"new_id": new_query["id"], "visualizations": visualizations}
         duplicate_dashboard(target_client, dashboard, state[clone_state_id])
@@ -159,3 +166,18 @@ def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: 
     print(state)
     with open('state.json', 'w') as file:
         file.write(json.dumps(state))
+
+
+def set_data_source_id_from_endpoint_id(client):
+    print("Fetching endpoints to extract data_source id...")
+    data_sources = requests.get(client.url+"/api/2.0/preview/sql/data_sources", headers=client.headers).json()
+    assert len(data_sources) > 0, "No endpoints available. Please create at least 1 endpoint before cloning the dashboards."
+    if client.endpoint_id is None:
+        print(f"No endpoint id found. Using the first endpoint available: {data_sources[0]}")
+        client.data_source_id = data_sources[0]['id']
+    for data_source in data_sources:
+        if "endpoint_id" in data_source and data_source['endpoint_id'] == client.endpoint_id:
+            print(f"found datasource {data_source['id']} for endpoint {data_source['endpoint_id']}")
+            client.data_source_id = data_source['id']
+            break
+    assert client.data_source_id is not None, f"Couldn't find an endpoint with ID {client.endpoint_id} in workspace {client.url}. Please use the endpoint ID from the URL."

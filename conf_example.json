@@ -9,13 +9,20 @@
     {
       "url": "https://xxxx.cloud.databricks.com",
       "token": "xxxxxx",
-      "data_source_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "sql_database_name": "xxx"
+      "endpoint_id": "xxxxxxxxxx4da979",
+      "sql_database_name": "xxx",
+      "permissions":[
+        {
+          "group_name": "users",
+          "permission": "CAN_RUN"
+        }
+      ]
     },
     {
       "url": "https://xxxxxxxxxxxx.xx.azuredatabricks.net",
       "token": "xxxxxxxx",
-      "data_source_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      "endpoint_id": "xxxxxxxxxx4da979",
+      "permissions": null
     }
   ]
 }

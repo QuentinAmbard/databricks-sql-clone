@@ -11,7 +11,7 @@ def get_client(config_file):
                         dashboard_tags=config["source"]["dashboard_tags"])
         targets = []
         for target in config["targets"]:
-            client = Client(target["url"], target["token"], target["data_source_id"])
+            client = Client(target["url"], target["token"], permissions=target["permissions"], endpoint_id=target["endpoint_id"])
             if "sql_database_name" in target:
                 client.sql_database_name = target["sql_database_name"]
             targets.append(client)
@@ -26,4 +26,5 @@ args = parser.parse_args()
 source_client, target_clients, delete_target_dashboards = get_client(args.config_file)
 
 for target_client in target_clients:
+    copy_dashboard.set_data_source_id_from_endpoint_id(target_client)
     copy_dashboard.delete_and_clone_dashboards_with_tags(source_client, target_client, source_client.dashboard_tags, delete_target_dashboards)
