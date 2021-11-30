@@ -11,7 +11,9 @@ def get_client(config_file):
                         dashboard_tags=config["source"]["dashboard_tags"])
         targets = []
         for target in config["targets"]:
-            client = Client(target["url"], target["token"], permissions=target["permissions"], endpoint_id=target["endpoint_id"])
+            client = Client(target["url"], target["token"], permissions=target["permissions"])
+            if "endpoint_id" in target:
+                client.endpoint_id = target["endpoint_id"]
             if "sql_database_name" in target:
                 client.sql_database_name = target["sql_database_name"]
             targets.append(client)
