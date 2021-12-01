@@ -4,22 +4,22 @@ Unofficial project to allow Databricks SQL dashboard copy from one workspace to 
 ## Resource clone
 
 ### Setup:
-Create a file named `config.json` and put your credential. You need to define the source (where the resources will be copied from) and a list of targets (where the resources will be cloned).
+Create a file named `config.json` and put your credentials. You need to define the source (where the resources will be copied from) and a list of targets (where the resources will be cloned).
 
 ```json
 {
   "source": {
     "url": "https://xxxxx.cloud.databricks.com",
     "token": "xxxxxxx", /* your PAT token*/
-    "dashboard_tags": ["field_demos"] /* Dashboards having any of these tags matching will be first DELETED from the targets and then cloned from the SOURCE */
+    "dashboard_tags": ["field_demos"] /* Dashboards having any of these tags matching will be cloned from the SOURCE */
   },
-  "delete_target_dashboards": true, /* erase the dashboards in the targets having the same tags. If false, won't do anything (might endup with duplicates). */
+  "delete_target_dashboards": true, /* Erase the dashboards and queries in the targets having the same tags in TARGETS. If false, won't do anything (might endup with duplicates). */
   "targets": [
     {
       "url": "https:/xxxxxxx.cloud.databricks.com",
       "token": "xxxxxxx",
       "endpoint_id": "xxxxxxxxxx4da979", /* Optional, will use the first endpoint available if not set. At least 1 endpoint must exist in the workspace.*/
-      "permissions":[ /* Optional, force the permissions to this set of values. In this example add a CAN_RUN for All Users.*/
+      "permissions":[ /* Optional, force the permissions to this set of values. In this example we add a CAN_RUN for All Users.*/
         {
           "user_name": "xxx@xxx.com",
           "permission_level": "CAN_MANAGE"
@@ -47,24 +47,35 @@ The endpoint ID is in the URL: `https://xxxx.azuredatabricks.net/sql/endpoints/<
 Run the `clone_resources.py` script to clone all the ressources
 
 ## Dashboard update
-Currently updates aren't supported, only delete & recreate. See "Handling state" for more details.
+If a state file (`json.state`) exists and the dashboards+queries have already be cloned, the clone operation will try to update the existing dashboards and queries.
+
+Visualizations and widgets are systematically destroyed and re-created to simplify synchronization.
+
+If your state is out of sync, delete the entry matching your target to re-delete all content in the target and re-clone from scratch.
+
+You can delete the state of a single workspace by searching the entry in the json state information. 
+### State file structure
+```
+{
+  "SOURCE_URL-TARGET_URL": {
+    "SOURCE_DASHBOARD_ID": {
+      "queries": {
+        "SOURCE_QUERY_ID": {
+          "new_id": "TARGET_QUERY_ID",
+          "visualizations": {
+            "SOURCE_VISUALIZATION_ID": "TARGET_VISUALIZATION_ID",...
+          }
+        },...
+      },
+      "new_id": "TARGET_DASHBOARD_ID"
+    }
+  }
+}
+```
 
 ## Custom clone
 The clone utilities use a Client to identify source & target. Check `client.py` for more details.
-### Handling state
-A state file will be used to synch data. It contains a link between the original dashboard ID / Query / Visualization and the one cloned.
-
-In a next release this will be used to update the dashboard when already existing in the state instead of deleting it (to preserve dashboard ID and avoid breaking links).
 
 ### Custom Dashboard clone
 
-Dashboard cloning is available in `copy_dashboard.py`.
-
-By default, `copy_dashboard.delete_and_clone_dashboards_with_tags(source_client, dest_client, tags)` performs a DELETE on the tags matching in the target and re-create everything. It's not an UPDATE. 
-
-It will first DELETE all the dashboard in the dest with the given tags, 
-and then clone the dashboard from the source. 
-
-If you need to copy without deleting, set `delete_target_dashboards` to false.
-
-
+Dashboard cloning implementation is available in `copy_dashboard.py`, start with `clone_dashboard_by_ids` to implement your own logic

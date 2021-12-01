@@ -2,7 +2,7 @@
   "source": {
     "url": "https://xxxx.databricks.com",
     "token": "xxxxx",
-    "dashboard_tags": ["field_demos"]
+    "dashboard_tags": ["qoe"]
   },
   "delete_target_dashboards": true,
   "targets": [
@@ -14,7 +14,7 @@
       "permissions":[
         {
           "group_name": "users",
-          "permission": "CAN_RUN"
+          "permission_level": "CAN_RUN"
         }
       ]
     },

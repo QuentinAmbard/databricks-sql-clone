@@ -3,6 +3,9 @@ from typing import List
 import requests
 import json
 from utils.client import Client
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
+import collections
 
 def get_all_dashboards(client: Client, tags = []):
     return get_all_item(client, "dashboards", tags)
@@ -10,17 +13,23 @@ def get_all_dashboards(client: Client, tags = []):
 def get_all_queries(client: Client, tags = []):
     return get_all_item(client, "queries", tags)
 
-def delete_dashboard(client: Client, tags=[]):
+def delete_dashboard(client: Client, tags=[], ids_to_skip={}):
     print(f"cleaning up dashboards with tags in {tags}...")
     for d in get_all_dashboards(client, tags):
-        print(f"deleting dashboard {d['id']} - {d['name']}")
-        requests.delete(client.url+"/api/2.0/preview/sql/dashboards/"+d["id"], headers = client.headers).json()
+        if d['id'] not in ids_to_skip:
+            print(f"deleting dashboard {d['id']} - {d['name']}")
+            requests.delete(client.url+"/api/2.0/preview/sql/dashboards/"+d["id"], headers = client.headers).json()
 
-def delete_queries(client: Client, tags=[]):
+def delete_queries(client: Client, tags=[], ids_to_skip={}):
     print(f"cleaning up queries with tags in {tags}...")
-    for d in get_all_queries(client, tags):
-        print(f"deleting query {d['id']} - {d['name']}")
-        requests.delete(client.url+"/api/2.0/preview/sql/queries/"+d["id"], headers = client.headers).json()
+    queries_to_delete = get_all_queries(client, tags)
+    params = [(client, q) for q in queries_to_delete if q['id'] not in ids_to_skip]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        collections.deque(executor.map(lambda args, f=delete_query: f(*args), params))
+
+def delete_query(client: Client, q):
+    print(f"deleting query {q['id']} - {q['name']}")
+    requests.delete(client.url+"/api/2.0/preview/sql/queries/"+q["id"], headers = client.headers).json()
 
 def get_all_item(client: Client, item, tags = []):
     assert item == "queries" or item == "dashboards"
@@ -75,20 +84,29 @@ def clone_query_visualization(client: Client, query, target_query):
         mapping[v["id"]] = new_v["id"]
     return mapping
 
-def duplicate_dashboard(client: Client, dashboard, state):
+def duplicate_dashboard(client: Client, dashboard, dashboard_state):
     data = {"name": dashboard["name"], "tags": dashboard["tags"]}
-    new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data).json()
-    print(f"     dashboard created {new_dashboard}...")
+    if "new_id" in dashboard_state and 'id' in requests.get(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers).json():
+        print("  dashboard exists, updating it")
+        new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
+        #Drop all the widgets and re-create them
+        for widget in dashboard["widgets"]:
+            print(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
+            requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
+    else:
+        print(f"  creating new dashboard...")
+        new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data).json()
+        dashboard_state["new_id"] = new_dashboard["id"]
     if client.permisions_defined():
         permissions = requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions).json()
-        print(f"     Permissions set to {permissions}")
+        print(f"     Dashboard ermissions set to {permissions}")
     for widget in dashboard["widgets"]:
         print(f"          cloning widget {widget}...")
         visualization_id_clone = None
         if "visualization" in widget:
             query_id = widget["visualization"]["query"]["id"]
             visualization_id = widget["visualization"]["id"]
-            visualization_id_clone = state[dashboard["id"]][query_id]["visualizations"][visualization_id]
+            visualization_id_clone = dashboard_state["queries"][query_id]["visualizations"][visualization_id]
         data = {
             "dashboard_id": new_dashboard["id"],
             "visualization_id": visualization_id_clone,
@@ -100,7 +118,7 @@ def duplicate_dashboard(client: Client, dashboard, state):
 
     return new_dashboard
 
-def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboard_ids, clone_state_id = "new_clone", state = {}):
+def clone_dashboard_by_ids(source_client: Client, target_client: Client, dashboard_ids, workspace_state = {}):
     """
     :param source_client: workspace source
     :param target_client: workspace 
@@ -109,58 +127,93 @@ def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboar
     :param state:
     :return:
     """
-    for dashboard_id in dashboard_ids:
-        state[clone_state_id][dashboard_id] = {}
-        dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
-        print(f"cloning dashboard {dashboard}...")
-        queries = set()
-        for widget in dashboard["widgets"]:
-            if "visualization" in widget:
-                queries.add(widget["visualization"]["query"]["id"])
-        for query_id in queries:
-            q = requests.get(source_client.url+"/api/2.0/preview/sql/queries/"+query_id, headers = source_client.headers).json()
-            q_creation = {
-                "data_source_id": target_client.data_source_id,
-                "query": q["query"],
-                "name": q["name"],
-                "description": q["description"],
-                "schedule": q["schedule"],
-                "tags": q["tags"],
-                "options": q["options"]
-            }
-            if target_client.sql_database_name:
-                q_creation["query"] = q_creation["query"].replace("field_demos_retail", target_client.sql_database_name)
+    params = [(source_client, target_client, dashboard_id, workspace_state[dashboard_id] if dashboard_id in workspace_state else {}) for dashboard_id in dashboard_ids]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        for (dashboard_id, dashboard_state) in executor.map(lambda args, f=clone_dashboard_by_id: f(*args), params):
+            workspace_state[dashboard_id] = dashboard_state
+    return workspace_state
 
-            print(f"     cloning query {q_creation}...")
-            new_query = requests.post(target_client.url+"/api/2.0/preview/sql/queries", headers = target_client.headers, json = q_creation).json()
-            if target_client.permisions_defined():
-                permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
-                print(f"     Permissions set to {permissions}")
+def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboard_id, dashboard_state):
+    if "queries" not in dashboard_state:
+        dashboard_state["queries"] = {}
+    dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
+    print(f"cloning dashboard {dashboard}...")
+    queries = set()
+    for widget in dashboard["widgets"]:
+        if "visualization" in widget:
+            queries.add(widget["visualization"]["query"]["id"])
+    for query_id in queries:
+        q = requests.get(source_client.url + "/api/2.0/preview/sql/queries/" + query_id, headers=source_client.headers).json()
+        new_query = clone_or_update_query(dashboard_state, q, target_client)
+        if target_client.permisions_defined():
+            permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
+            print(f"     Permissions set to {permissions}")
 
-            visualizations = clone_query_visualization(target_client, q, new_query)
-            state[clone_state_id][dashboard_id][query_id] = {"new_id": new_query["id"], "visualizations": visualizations}
-        duplicate_dashboard(target_client, dashboard, state[clone_state_id])
-    return state
+        visualizations = clone_query_visualization(target_client, q, new_query)
+        dashboard_state["queries"][query_id] = {"new_id": new_query["id"], "visualizations": visualizations}
+    duplicate_dashboard(target_client, dashboard, dashboard_state)
+    return dashboard_id, dashboard_state
 
-def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: Client, tags: List, delete_target_dashboards: bool):
+
+def clone_or_update_query(dashboard_state, q, target_client):
+    q_creation = {
+        "data_source_id": target_client.data_source_id,
+        "query": q["query"],
+        "name": q["name"],
+        "description": q["description"],
+        "schedule": q["schedule"],
+        "tags": q["tags"],
+        "options": q["options"]
+    }
+    if target_client.sql_database_name:
+        q_creation["query"] = q_creation["query"].replace("field_demos_retail", target_client.sql_database_name)
+    new_query = None
+    if q['id'] in dashboard_state["queries"]:
+        existing_query_id = dashboard_state["queries"][q['id']]["new_id"]
+        # check if the query still exists (it might have been manually deleted by mistake)
+        if 'id' in requests.get(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
+                                headers=target_client.headers).json():
+            print(f"     updating the existing query {existing_query_id}")
+            new_query = requests.post(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
+                                      headers=target_client.headers, json=q_creation).json()
+            # Delete all query visualization to reset its settings
+            for v in new_query["visualizations"]:
+                print(f"     deleting query visualization {v['id']}")
+                requests.delete(target_client.url + "/api/2.0/preview/sql/visualizations/" + v["id"],
+                                headers=target_client.headers).json()
+    if not new_query:
+        print(f"     cloning query {q_creation}...")
+        new_query = requests.post(target_client.url + "/api/2.0/preview/sql/queries", headers=target_client.headers,
+                                  json=q_creation).json()
+    return new_query
+
+
+def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: Client, tags: List,
+                                          delete_target_dashboards: bool, state):
     assert len(tags) > 0
-    if delete_target_dashboards:
-        #Cleanup all existing ressources.
-        delete_queries(target_client, tags)
-        delete_dashboard(target_client, tags)
-
     print(f"fetching existing dashboard with tags in {tags}...")
-    dashboard_to_clone = get_all_dashboards(source_client, tags)
+    workspace_state_id = source_client.url+"-"+target_client.url
 
-    with open("./state.json", "r") as r:
-        state = json.loads(r.read())
-    clone_state_id = source_client.url+"-"+target_client.url
-    if clone_state_id not in state:
-        state[clone_state_id] = {}
+    dashboards_to_clone = get_all_dashboards(source_client, tags)
+    if workspace_state_id not in state:
+        state[workspace_state_id] = {}
+    workspace_state = state[workspace_state_id]
 
-    print(f"start dashboard cloning...")
-    dashboard_to_clone_ids = [d["id"] for d in dashboard_to_clone]
-    state = clone_dashboard_by_id(source_client, target_client, dashboard_to_clone_ids, clone_state_id, state)
+    print(f"start cloning {len(dashboards_to_clone)} dashboards...")
+    dashboard_to_clone_ids = [d["id"] for d in dashboards_to_clone]
+    state[workspace_state_id] = clone_dashboard_by_ids(source_client, target_client, dashboard_to_clone_ids, workspace_state)
+
+    # Cleanup all existing ressources, but skip the queries used in the new dashboard (to support update)
+    if delete_target_dashboards:
+        new_queries = set()
+        new_dashboards = set()
+        for origin_dashboard_id in state[workspace_state_id]:
+            new_dashboards.add(state[workspace_state_id][origin_dashboard_id]["new_id"])
+            for origin_query_id in state[workspace_state_id][origin_dashboard_id]["queries"]:
+                new_queries.add(state[workspace_state_id][origin_dashboard_id]["queries"][origin_query_id]["new_id"])
+        delete_queries(target_client, tags, new_queries)
+        delete_dashboard(target_client, tags, new_dashboards)
+
     print("-----------------------")
     print("import complete. Saving state for further update/analysis.")
     print(state)

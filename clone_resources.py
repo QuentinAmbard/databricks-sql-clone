@@ -23,10 +23,21 @@ def get_client(config_file):
 parser = argparse.ArgumentParser()
 parser.add_argument("--config_file", default="config.json", required=False,
                     help="configuration file containing credential and dashboard to clone")
+parser.add_argument("--state_file", default="state.json", required=False,
+                    help="state containing the links between the already cloned dashboard. Used to update resources")
 args = parser.parse_args()
 
 source_client, target_clients, delete_target_dashboards = get_client(args.config_file)
 
+try:
+    with open("state.json", "r") as r:
+        state = json.loads(r.read())
+except:
+    print("state isn't available, create an empty one")
+    state = {}
+
+
 for target_client in target_clients:
     copy_dashboard.set_data_source_id_from_endpoint_id(target_client)
-    copy_dashboard.delete_and_clone_dashboards_with_tags(source_client, target_client, source_client.dashboard_tags, delete_target_dashboards)
+    copy_dashboard.delete_and_clone_dashboards_with_tags(source_client, target_client, source_client.dashboard_tags,
+                                                         delete_target_dashboards, state)
