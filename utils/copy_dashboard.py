@@ -163,7 +163,6 @@ def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboar
                 del p["value"]
         new_query = clone_or_update_query(dashboard_state, q, target_client)
         if target_client.permisions_defined():
-            print(f"NEW QUERY={new_query}")
             permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
             print(f"     Permissions set to {permissions}")
 
