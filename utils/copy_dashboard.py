@@ -121,7 +121,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state):
 def clone_dashboard_by_ids(source_client: Client, target_client: Client, dashboard_ids, workspace_state = {}):
     """
     :param source_client: workspace source
-    :param target_client: workspace 
+    :param target_client: workspace
     :param dashboard_ids:
     :param clone_state_id:
     :param state:
@@ -138,14 +138,32 @@ def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboar
         dashboard_state["queries"] = {}
     dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
     print(f"cloning dashboard {dashboard}...")
-    queries = set()
+    queries = list()
     for widget in dashboard["widgets"]:
         if "visualization" in widget:
-            queries.add(widget["visualization"]["query"]["id"])
+            #First we need to add the queries from the parameters to make sure we clone them too
+            if "options" in widget["visualization"]["query"] and \
+                    "parameters" in widget["visualization"]["query"]["options"]:
+                for p in widget["visualization"]["query"]["options"]["parameters"]:
+                    if "queryId" in p:
+                        queries.append(p["queryId"])
+            queries.append(widget["visualization"]["query"]["id"])
+    print(queries)
+
+    #removes duplicated but keep order (we need to start with the param queries first)
+    queries = list(dict.fromkeys(queries))
+
     for query_id in queries:
         q = requests.get(source_client.url + "/api/2.0/preview/sql/queries/" + query_id, headers=source_client.headers).json()
+        #We need to replace the param queries with the newly created one
+        if "parameters" in q["options"]:
+            for p in q["options"]["parameters"]:
+                p["queryId"] = dashboard_state["queries"][p["queryId"]]["new_id"]
+                del p["parentQueryId"]
+                del p["value"]
         new_query = clone_or_update_query(dashboard_state, q, target_client)
         if target_client.permisions_defined():
+            print(f"NEW QUERY={new_query}")
             permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
             print(f"     Permissions set to {permissions}")
 
