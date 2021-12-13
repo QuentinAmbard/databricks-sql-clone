@@ -90,7 +90,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state):
         print("  dashboard exists, updating it")
         new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
         #Drop all the widgets and re-create them
-        for widget in dashboard["widgets"]:
+        for widget in new_dashboard["widgets"]:
             print(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
             requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
     else:
@@ -220,7 +220,7 @@ def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: 
     dashboard_to_clone_ids = [d["id"] for d in dashboards_to_clone]
     state[workspace_state_id] = clone_dashboard_by_ids(source_client, target_client, dashboard_to_clone_ids, workspace_state)
 
-    # Cleanup all existing ressources, but skip the queries used in the new dashboard (to support update)
+    # Cleanup all existing resources, but skip the queries used in the new dashboard (to support update)
     if delete_target_dashboards:
         new_queries = set()
         new_dashboards = set()

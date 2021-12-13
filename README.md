@@ -44,7 +44,7 @@ To find your `endpoint_id` on each target workspace, click in one of your endpoi
 The endpoint ID is in the URL: `https://xxxx.azuredatabricks.net/sql/endpoints/<endpoint_id>?o=xxxx`
 
 ### Run:
-Run the `clone_resources.py` script to clone all the ressources
+Run the `clone_resources.py` script to clone all the resources
 
 ## Dashboard update
 If a state file (`json.state`) exists and the dashboards+queries have already be cloned, the clone operation will try to update the existing dashboards and queries.
