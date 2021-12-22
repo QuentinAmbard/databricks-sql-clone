@@ -139,16 +139,22 @@ def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboar
     dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
     print(f"cloning dashboard {dashboard}...")
     queries = list()
+
+    def recursively_append_param_queries(q):
+        for p in q["options"]["parameters"]:
+            if "queryId" in p:
+                queries.insert(0, p["queryId"])
+                #get the details of the underlying query to recursively append children queries from parameters if any
+                child_q = requests.get(source_client.url + "/api/2.0/preview/sql/queries/" + p["queryId"], headers=source_client.headers).json()
+                recursively_append_param_queries(child_q)
+
     for widget in dashboard["widgets"]:
         if "visualization" in widget:
             #First we need to add the queries from the parameters to make sure we clone them too
             if "options" in widget["visualization"]["query"] and \
                     "parameters" in widget["visualization"]["query"]["options"]:
-                for p in widget["visualization"]["query"]["options"]["parameters"]:
-                    if "queryId" in p:
-                        queries.append(p["queryId"])
+                recursively_append_param_queries(widget["visualization"]["query"])
             queries.append(widget["visualization"]["query"]["id"])
-    print(queries)
 
     #removes duplicated but keep order (we need to start with the param queries first)
     queries = list(dict.fromkeys(queries))
@@ -158,9 +164,11 @@ def clone_dashboard_by_id(source_client: Client, target_client: Client, dashboar
         #We need to replace the param queries with the newly created one
         if "parameters" in q["options"]:
             for p in q["options"]["parameters"]:
-                p["queryId"] = dashboard_state["queries"][p["queryId"]]["new_id"]
-                del p["parentQueryId"]
-                del p["value"]
+                if "queryId" in p:
+                    p["queryId"] = dashboard_state["queries"][p["queryId"]]["new_id"]
+                    if "parentQueryId" in p:
+                        del p["parentQueryId"]
+                    del p["value"]
         new_query = clone_or_update_query(dashboard_state, q, target_client)
         if target_client.permisions_defined():
             permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
