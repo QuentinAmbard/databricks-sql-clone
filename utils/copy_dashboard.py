@@ -196,8 +196,9 @@ def clone_or_update_query(dashboard_state, q, target_client):
     if q['id'] in dashboard_state["queries"]:
         existing_query_id = dashboard_state["queries"][q['id']]["new_id"]
         # check if the query still exists (it might have been manually deleted by mistake)
-        if 'id' in requests.get(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
-                                headers=target_client.headers).json():
+        existing_query = requests.get(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
+                                         headers=target_client.headers).json()
+        if 'id' in existing_query and 'moved_to_trash_at' not in existing_query:
             print(f"     updating the existing query {existing_query_id}")
             new_query = requests.post(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
                                       headers=target_client.headers, json=q_creation).json()
