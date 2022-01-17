@@ -86,14 +86,19 @@ def clone_query_visualization(client: Client, query, target_query):
 
 def duplicate_dashboard(client: Client, dashboard, dashboard_state):
     data = {"name": dashboard["name"], "tags": dashboard["tags"]}
-    if "new_id" in dashboard_state and 'id' in requests.get(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers).json():
-        print("  dashboard exists, updating it")
-        new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
-        #Drop all the widgets and re-create them
-        for widget in new_dashboard["widgets"]:
-            print(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
-            requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
-    else:
+    new_dashboard = None
+    if "new_id" in dashboard_state:
+        existing_dashboard = requests.get(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers).json()
+        if "options" in existing_dashboard and "moved_to_trash_at" not in existing_dashboard["options"]:
+            print("  dashboard exists, updating it")
+            new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
+            #Drop all the widgets and re-create them
+            for widget in new_dashboard["widgets"]:
+                print(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
+                requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
+        else:
+            print("    couldn't find the dashboard defined in the state, it probably has been deleted.")
+    if new_dashboard is None:
         print(f"  creating new dashboard...")
         new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data).json()
         dashboard_state["new_id"] = new_dashboard["id"]
