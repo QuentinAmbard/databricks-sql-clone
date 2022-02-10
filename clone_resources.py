@@ -36,6 +36,7 @@ except:
     print("state isn't available, create an empty one")
     state = {}
 
+clone_dashboard.delete_queries(target_clients[0], "")
 
 for target_client in target_clients:
     clone_dashboard.set_data_source_id_from_endpoint_id(target_client)

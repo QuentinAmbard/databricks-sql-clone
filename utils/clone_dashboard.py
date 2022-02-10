@@ -77,7 +77,7 @@ def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: 
     print("import complete. Saving state for further update/analysis.")
     print(state)
     with open('state.json', 'w') as file:
-        file.write(json.dumps(state))
+        file.write(json.dumps(state, indent=4, sort_keys=True))
 
 
 def set_data_source_id_from_endpoint_id(client):
