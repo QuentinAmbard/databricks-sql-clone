@@ -97,5 +97,5 @@ Loading the dashboard will update the sate definition. If you don't care about i
     target_client = Client("<workspaceUrl>", "<workspaceToken>")
     workspace_state = {}
     dashboard_id_to_load = "xxx-xxx-xxx-xxx"
-    load_dashboard.load_dashboards(target_client, dashboard_id_to_load, workspace_state, "./dashboards/")
+    load_dashboard.load_dashboard(target_client, dashboard_id_to_load, workspace_state, "./dashboards/")
 ```
