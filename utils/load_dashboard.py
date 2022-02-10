@@ -5,10 +5,14 @@ import json
 import collections
 
 def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
+    if workspace_state is None:
+        workspace_state = {}
     params = [(target_client, dashboard_id, workspace_state[dashboard_id] if dashboard_id in workspace_state else {}) for dashboard_id in dashboard_ids]
+    print(params)
     with ThreadPoolExecutor(max_workers=10) as executor:
         for (dashboard_id, dashboard_state) in executor.map(lambda args, f=load_dashboard: f(*args), params):
             workspace_state[dashboard_id] = dashboard_state
+    return workspace_state
 
 def load_dashboard(target_client: Client, dashboard_id, dashboard_state, folder_prefix="./dashboards/"):
     with open(f'{folder_prefix}dashboard-{dashboard_id}.json', 'r') as r:
