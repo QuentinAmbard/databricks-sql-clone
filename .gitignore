@@ -1,6 +1,7 @@
 state.json
 .idea
 utils/__pycache__
+dashboards/dashboard-*.json
 secret.json
 config.json
 *.iml

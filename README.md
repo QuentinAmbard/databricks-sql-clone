@@ -73,9 +73,29 @@ You can delete the state of a single workspace by searching the entry in the jso
 }
 ```
 
-## Custom clone
-The clone utilities use a Client to identify source & target. Check `client.py` for more details.
+## Working with git
 
-### Custom Dashboard clone
+### Saving dashboards as json:
+```
+    source_client = Client("<workspaceUrl>", "<workspaceToken>")
+    dashboard_id_to_save = "xxx-xxx-xxx-xxx"
+    dump_dashboard.dump_dashboard(source_client, dashboard_id_to_save, "./dashboards/")
+```
 
-Dashboard cloning implementation is available in `copy_dashboard.py`, start with `clone_dashboard_by_ids` to implement your own logic
+Dashboard jsons definition will then be saved under the specified folder `./dashboards/` and can be saved in git as required.
+
+
+### Loading dashboards from json:
+Once the json is saved, you can load it to build or update the dashboard in any workspace.
+
+`dashboard_state` contains the link between the source and the cloned dashboard. 
+It is used to update the dashboard clone and avoid having to delete/re-recreate the cloned dashboard everytime. 
+
+Loading the dashboard will update the sate definition. If you don't care about it you can pass an empty dict `{}`
+
+```
+    target_client = Client("<workspaceUrl>", "<workspaceToken>")
+    workspace_state = {}
+    dashboard_id_to_load = "xxx-xxx-xxx-xxx"
+    load_dashboard.load_dashboards(target_client, dashboard_id_to_load, workspace_state, "./dashboards/")
+```
