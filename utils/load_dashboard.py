@@ -8,7 +8,7 @@ def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
     if workspace_state is None:
         workspace_state = {}
     params = [(target_client, dashboard_id, workspace_state[dashboard_id] if dashboard_id in workspace_state else {}) for dashboard_id in dashboard_ids]
-    print(params)
+
     with ThreadPoolExecutor(max_workers=10) as executor:
         for (dashboard_id, dashboard_state) in executor.map(lambda args, f=load_dashboard: f(*args), params):
             workspace_state[dashboard_id] = dashboard_state
@@ -100,7 +100,8 @@ def clone_query_visualization(client: Client, query, target_query):
             "description": orig_default_table["description"],
             "options": orig_default_table["options"]
         }
-        mapping[orig_default_table["id"]] = target_default_table["id"]
+        if target_default_table is not None:
+            mapping[orig_default_table["id"]] = target_default_table["id"]
         print(f"         updating default Viz {target_default_table['id']}...")
         requests.post(client.url+"/api/2.0/preview/sql/visualizations/"+target_default_table["id"], headers = client.headers, json=default_table_viz_data)
     #Then create the other visualizations

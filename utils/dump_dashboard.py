@@ -1,10 +1,13 @@
 import requests
 from utils.client import Client
 import json
+from concurrent.futures import ThreadPoolExecutor
+import collections
 
 def dump_dashboards(source_client: Client, dashboard_ids):
-    for id in dashboard_ids:
-        dump_dashboard(source_client, id)
+    params = [(source_client, id) for id in dashboard_ids]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        collections.deque(executor.map(lambda args, f=dump_dashboard: f(*args), params))
 
 def dump_dashboard(source_client: Client, dashboard_id, folder_prefix="./dashboards/"):
     dashboard = get_dashboard_by_id(source_client, dashboard_id)
