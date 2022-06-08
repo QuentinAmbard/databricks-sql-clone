@@ -3,6 +3,8 @@ from utils.client import Client
 import json
 from concurrent.futures import ThreadPoolExecutor
 import collections
+import os
+
 
 def dump_dashboards(source_client: Client, dashboard_ids):
     params = [(source_client, id) for id in dashboard_ids]
@@ -11,6 +13,10 @@ def dump_dashboards(source_client: Client, dashboard_ids):
 
 def dump_dashboard(source_client: Client, dashboard_id, folder_prefix="./dashboards/"):
     dashboard = get_dashboard_by_id(source_client, dashboard_id)
+    if not folder_prefix.endswith("/"):
+        folder_prefix += "/"
+    if not os.path.exists(folder_prefix):
+        os.makedirs(folder_prefix)
     with open(f'{folder_prefix}dashboard-{dashboard_id}.json', 'w') as file:
         file.write(json.dumps(dashboard, indent=4, sort_keys=True))
 

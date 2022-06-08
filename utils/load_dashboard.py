@@ -15,6 +15,8 @@ def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
     return workspace_state
 
 def load_dashboard(target_client: Client, dashboard_id, dashboard_state, folder_prefix="./dashboards/"):
+    if not folder_prefix.endswith("/"):
+        folder_prefix += "/"
     with open(f'{folder_prefix}dashboard-{dashboard_id}.json', 'r') as r:
         dashboard = json.loads(r.read())
         print(dashboard)
@@ -106,12 +108,13 @@ def clone_query_visualization(client: Client, query, target_query):
         requests.post(client.url+"/api/2.0/preview/sql/visualizations/"+target_default_table["id"], headers = client.headers, json=default_table_viz_data)
     #Then create the other visualizations
     for v in sorted(query["visualizations"], key=lambda x: x["id"]):
-        print(f"         cloning Viz {v['id']}...")
+        print(v)
         data = {
             "name": v["name"],
             "description": v["description"],
             "options": v["options"],
             "type": v["type"],
+            "query_plan": v["query_plan"],
             "query_id": target_query["id"],
         }
         new_v = requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data).json()
@@ -139,7 +142,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state):
         dashboard_state["new_id"] = new_dashboard["id"]
     if client.permisions_defined():
         permissions = requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions).json()
-        print(f"     Dashboard ermissions set to {permissions}")
+        print(f"     Dashboard permissions set to {permissions}")
     for widget in dashboard["widgets"]:
         print(f"          cloning widget {widget}...")
         visualization_id_clone = None

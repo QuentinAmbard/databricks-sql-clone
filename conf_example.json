@@ -15,6 +15,10 @@
         {
           "group_name": "users",
           "permission_level": "CAN_RUN"
+        },
+        {
+          "user_name": "xxx@xxx.com",
+          "permission_level": "CAN_MANAGE"
         }
       ]
     },
