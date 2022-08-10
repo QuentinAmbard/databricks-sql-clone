@@ -1,0 +1,22 @@
+{
+  "targets": [
+    {
+      "url": "https://yourtargetdb.cloud.databricks.com",
+      "token": "dapixxxxxxxxxx",
+      "endpoint_id":"xxxxxxxxx",
+      "permissions":[
+        {
+          "group_name": "users",
+          "permission_level": "CAN_RUN"
+        },
+        {
+          "group_name": "admins",
+          "permission_level": "CAN_MANAGE"
+        }
+      ]
+    }
+  ],
+"dashboard_id":"xxxxxx-xxxxa-xxxxxxxx",
+"dashboard_folder":"./dashboards/"
+	
+}
