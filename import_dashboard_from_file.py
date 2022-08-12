@@ -22,7 +22,7 @@ def get_client(config_filei,pat_token):
 parser = argparse.ArgumentParser()
 parser.add_argument("--config_file", default="config_import.json", required=False,
                     help="Configuration file containing credential and dashboard to clone")
-parser.add_argument("--pat_token", required=Truee,
+parser.add_argument("--pat_token", required=True,
                     help="Personal Access Token to for your workspace")
 args = parser.parse_args()
 
