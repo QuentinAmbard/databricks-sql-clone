@@ -16,8 +16,6 @@ def get_client(config_file):
 parser = argparse.ArgumentParser()
 parser.add_argument("--config_file", default="config_export.json", required=False,
                     help="configuration file containing credential and dashboard to clone")
-parser.add_argument("--state_file", default="state.json", required=False,
-                    help="state containing the links between the already cloned dashboard. Used to update resources")
 args = parser.parse_args()
 source_client,dashboard_id_to_save,dashboard_folder_to_save  = get_client(args.config_file)
 dump_dashboard(source_client,dashboard_id_to_save,dashboard_folder_to_save)

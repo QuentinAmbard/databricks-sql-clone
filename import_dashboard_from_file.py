@@ -5,12 +5,13 @@ from utils.client import Client
 import json
 
 
-def get_client(config_filei,pat_token):
+def get_client(config_file,pat_token):
     with open(config_file, "r") as r:
         config = json.loads(r.read())
         targets = []
         for target in config["targets"]:
-            client = Client(target["url"],pat_token, permissions=target["permissions"])
+            print("Token ->("+pat_token+")")
+            client = Client(target["url"], pat_token, permissions=target["permissions"])
             if "endpoint_id" in target:
                 client.endpoint_id = target["endpoint_id"]
             if "sql_database_name" in target:

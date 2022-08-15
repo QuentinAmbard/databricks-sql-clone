@@ -22,7 +22,7 @@
         "tags": [
             "SAT"
         ],
-        "updated_at": "2022-08-09T15:15:35Z",
+        "updated_at": "2022-08-15T00:34:16Z",
         "user": {
             "email": "arun.pamulapati@databricks.com",
             "id": 6132399981223669,
@@ -31,7 +31,7 @@
             "profile_image_url": "https://www.gravatar.com/avatar/14ec1a31bedbf1f5cdc8a243bf5bfb64?s=40&d=identicon"
         },
         "user_id": 6132399981223669,
-        "version": 2,
+        "version": 4,
         "widgets": [
             {
                 "created_at": "2022-07-20T14:41:27Z",
@@ -94,7 +94,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T18:44:35Z",
+                        "updated_at": "2022-08-15T00:34:06Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -165,7 +165,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T18:44:35Z",
+                        "updated_at": "2022-08-15T00:34:06Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -236,7 +236,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T18:44:35Z",
+                        "updated_at": "2022-08-15T00:34:06Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -309,7 +309,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T18:44:35Z",
+                        "updated_at": "2022-08-15T00:34:06Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -380,7 +380,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T18:44:35Z",
+                        "updated_at": "2022-08-15T00:34:06Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -451,7 +451,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T18:44:35Z",
+                        "updated_at": "2022-08-15T00:34:06Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -726,6 +726,7 @@
                                     "false",
                                     "true"
                                 ],
+                                "description": "Check Status",
                                 "displayAs": "image",
                                 "highlightLinks": false,
                                 "imageHeight": "20",
@@ -867,13 +868,13 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T00:28:44Z",
+                        "updated_at": "2022-08-15T00:28:45Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
                     "query_plan": null,
                     "type": "TABLE",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:47:09Z"
                 },
                 "width": 1
             },
@@ -978,7 +979,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1089,7 +1090,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1200,7 +1201,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1311,7 +1312,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1422,7 +1423,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1533,7 +1534,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1644,7 +1645,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1755,7 +1756,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1866,7 +1867,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -1977,7 +1978,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2088,7 +2089,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2199,7 +2200,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-10T14:58:16Z",
+                        "updated_at": "2022-08-15T00:24:14Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2338,7 +2339,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T20:24:33Z",
+                        "updated_at": "2022-08-15T00:30:13Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2431,7 +2432,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T20:24:33Z",
+                        "updated_at": "2022-08-15T00:30:13Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2501,7 +2502,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T20:24:33Z",
+                        "updated_at": "2022-08-15T00:30:13Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2572,7 +2573,7 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T20:24:33Z",
+                        "updated_at": "2022-08-15T00:30:13Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
@@ -2755,6 +2756,7 @@
                                     "false",
                                     "true"
                                 ],
+                                "description": "Check Status",
                                 "displayAs": "image",
                                 "highlightLinks": false,
                                 "imageHeight": "20",
@@ -2896,13 +2898,13 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T00:28:44Z",
+                        "updated_at": "2022-08-15T00:28:45Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
                     "query_plan": null,
                     "type": "TABLE",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:47:09Z"
                 },
                 "width": 1
             },
@@ -3079,6 +3081,7 @@
                                     "false",
                                     "true"
                                 ],
+                                "description": "Check Status",
                                 "displayAs": "image",
                                 "highlightLinks": false,
                                 "imageHeight": "20",
@@ -3220,13 +3223,13 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T00:28:44Z",
+                        "updated_at": "2022-08-15T00:28:45Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
                     "query_plan": null,
                     "type": "TABLE",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:47:09Z"
                 },
                 "width": 1
             },
@@ -3403,6 +3406,7 @@
                                     "false",
                                     "true"
                                 ],
+                                "description": "Check Status",
                                 "displayAs": "image",
                                 "highlightLinks": false,
                                 "imageHeight": "20",
@@ -3544,13 +3548,13 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T00:28:44Z",
+                        "updated_at": "2022-08-15T00:28:45Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
                     "query_plan": null,
                     "type": "TABLE",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:47:09Z"
                 },
                 "width": 1
             },
@@ -3640,6 +3644,7 @@
                                 "zIndex": 1
                             },
                             "column_c12ea4ac7628": {
+                                "type": "column",
                                 "yAxis": 0
                             }
                         },
@@ -3687,29 +3692,33 @@
                             "apply_auto_limit": true,
                             "parameters": [],
                             "run_as_role": "viewer",
+                            "schema": "security_analysis",
                             "visualization_control_order": []
                         },
-                        "query": "SELECT\n  sbp.category,\n  sbp.severity,\n  count(sbp.severity) severity_count,\n  CASE\n    WHEN sbp.severity = 'High' THEN 3\n    WHEN sbp.severity = 'Medium' THEN 2\n    ELSE 1\n  END as ord\nFROM\n  security_analysis.security_checks sc,\n  security_analysis.security_best_practices sbp\nwhere\n  score = 1\n  and sc.chk_name = sbp.chk_name\n  and run_id = (\n    select\n      max(runID)\n    from\n      security_analysis.run_number_table\n  )\n  and category not IN ('Workspace Settings', 'Workspace Stats')\ngroup by\n  sbp.category,\n  sbp.severity\nORDER BY\n  ord",
+                        "query": "Select\n  concat(\n    results.category,\n    ' (Out of ',\n    category_count,\n    ')'\n  ) as category,\n  severity,\n  severity_count,\n  ord\nFROM\n  (\n    SELECT\n      sbp.category,\n      sbp.severity,\n      count(sbp.severity) severity_count,\n      CASE\n        WHEN sbp.severity = 'High' THEN 3\n        WHEN sbp.severity = 'Medium' THEN 2\n        ELSE 1\n      END as ord\n    FROM\n      security_analysis.security_checks sc,\n      security_analysis.security_best_practices sbp\n    where\n      score = 1\n      and sc.chk_name = sbp.chk_name\n      and run_id = (\n        select\n          max(runID)\n        from\n          security_analysis.run_number_table\n      )\n      and category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      sbp.category,\n      sbp.severity\n  ) as results,\n  (\n    SELECT\n      category,\n      count(*) as category_count\n    FROM\n      security_analysis.security_best_practices\n    WHERE\n      category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      category\n  ) as master\nwhere\n  results.category = master.category\n  ",
                         "run_as_role": "viewer",
                         "run_as_service_principal_id": null,
                         "schedule": null,
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T00:34:18Z",
+                        "updated_at": "2022-08-15T00:33:59Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
                     "query_plan": {
                         "groups": [
                             {
-                                "column": "category"
+                                "column": "severity"
                             },
                             {
-                                "column": "severity"
+                                "column": "category"
                             }
                         ],
                         "selects": [
+                            {
+                                "column": "severity"
+                            },
                             {
                                 "column": "category"
                             },
@@ -3721,14 +3730,11 @@
                                     }
                                 ],
                                 "function": "SUM"
-                            },
-                            {
-                                "column": "severity"
                             }
                         ]
                     },
                     "type": "CHART",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:42:38Z"
                 },
                 "width": 1
             },
@@ -3904,6 +3910,7 @@
                                     "false",
                                     "true"
                                 ],
+                                "description": "Check Status",
                                 "displayAs": "image",
                                 "highlightLinks": false,
                                 "imageHeight": "20",
@@ -4045,13 +4052,13 @@
                         "tags": [
                             "SAT"
                         ],
-                        "updated_at": "2022-08-09T00:28:44Z",
+                        "updated_at": "2022-08-15T00:28:45Z",
                         "user_id": 6132399981223669,
                         "version": 1
                     },
                     "query_plan": null,
                     "type": "TABLE",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:47:09Z"
                 },
                 "width": 1
             }
@@ -4076,7 +4083,7 @@
                 "name": "arun.pamulapati@databricks.com",
                 "profile_image_url": "https://www.gravatar.com/avatar/14ec1a31bedbf1f5cdc8a243bf5bfb64?s=40&d=identicon"
             },
-            "latest_query_data_id": "e5ed84ae-82cd-48b3-b3b4-6dc3d4c50be2",
+            "latest_query_data_id": "ba6f1e38-0d89-4eae-8337-1c642159d4bf",
             "name": "WS_Stats",
             "options": {
                 "apply_auto_limit": true,
@@ -4104,7 +4111,7 @@
             "tags": [
                 "SAT"
             ],
-            "updated_at": "2022-08-09T18:44:35Z",
+            "updated_at": "2022-08-15T00:34:06Z",
             "user": {
                 "email": "arun.pamulapati@databricks.com",
                 "id": 6132399981223669,
@@ -4294,7 +4301,7 @@
                 "name": "arun.pamulapati@databricks.com",
                 "profile_image_url": "https://www.gravatar.com/avatar/14ec1a31bedbf1f5cdc8a243bf5bfb64?s=40&d=identicon"
             },
-            "latest_query_data_id": "d0623a36-bd25-478c-b02c-8c21ed840197",
+            "latest_query_data_id": "b581f704-d5da-4177-b5c4-a267da0e7b14",
             "name": "Category Pillars",
             "options": {
                 "apply_auto_limit": true,
@@ -4325,7 +4332,7 @@
             "tags": [
                 "SAT"
             ],
-            "updated_at": "2022-08-09T00:28:44Z",
+            "updated_at": "2022-08-15T00:28:45Z",
             "user": {
                 "email": "arun.pamulapati@databricks.com",
                 "id": 6132399981223669,
@@ -4766,6 +4773,7 @@
                                     "false",
                                     "true"
                                 ],
+                                "description": "Check Status",
                                 "displayAs": "image",
                                 "highlightLinks": false,
                                 "imageHeight": "20",
@@ -4873,7 +4881,7 @@
                     },
                     "query_plan": null,
                     "type": "TABLE",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:47:09Z"
                 },
                 {
                     "created_at": "2022-07-20T14:41:17Z",
@@ -4952,7 +4960,7 @@
                 "name": "arun.pamulapati@databricks.com",
                 "profile_image_url": "https://www.gravatar.com/avatar/14ec1a31bedbf1f5cdc8a243bf5bfb64?s=40&d=identicon"
             },
-            "latest_query_data_id": "f0d5bed4-3942-44d7-a0a3-112bc3daa882",
+            "latest_query_data_id": "d1bfbeaf-1b08-491b-9b26-76425cba6297",
             "name": "Category Counters",
             "options": {
                 "apply_auto_limit": true,
@@ -4995,7 +5003,7 @@
             "tags": [
                 "SAT"
             ],
-            "updated_at": "2022-08-10T14:58:16Z",
+            "updated_at": "2022-08-15T00:24:14Z",
             "user": {
                 "email": "arun.pamulapati@databricks.com",
                 "id": 6132399981223669,
@@ -5069,7 +5077,7 @@
                 "name": "arun.pamulapati@databricks.com",
                 "profile_image_url": "https://www.gravatar.com/avatar/14ec1a31bedbf1f5cdc8a243bf5bfb64?s=40&d=identicon"
             },
-            "latest_query_data_id": "182ea98b-a1f7-4288-8c21-be9f157538f6",
+            "latest_query_data_id": "2de5a925-1b4f-421b-a36d-1faf29f2c83c",
             "name": "Account_Stats",
             "options": {
                 "apply_auto_limit": true,
@@ -5097,7 +5105,7 @@
             "tags": [
                 "SAT"
             ],
-            "updated_at": "2022-08-09T20:24:33Z",
+            "updated_at": "2022-08-15T00:30:13Z",
             "user": {
                 "email": "arun.pamulapati@databricks.com",
                 "id": 6132399981223669,
@@ -5684,26 +5692,40 @@
                 "name": "arun.pamulapati@databricks.com",
                 "profile_image_url": "https://www.gravatar.com/avatar/14ec1a31bedbf1f5cdc8a243bf5bfb64?s=40&d=identicon"
             },
-            "latest_query_data_id": "eff1f0ac-123a-4699-a854-cf610daf56cb",
+            "latest_execution": {
+                "catalog": null,
+                "data_source_id": "d5878969-c046-49d7-8734-f81281bef428",
+                "error_message": "",
+                "id": "73d943c3-b35c-4b2f-b9ef-22b1698d168d",
+                "num_rows": 9,
+                "query_id": "fdc33af2-0921-4fed-b320-08ed92eb4c18",
+                "query_text": "Select\n  concat(\n    results.category,\n    ' (Out of ',\n    category_count,\n    ')'\n  ) as category,\n  severity,\n  severity_count,\n  ord\nFROM\n  (\n    SELECT\n      sbp.category,\n      sbp.severity,\n      count(sbp.severity) severity_count,\n      CASE\n        WHEN sbp.severity = 'High' THEN 3\n        WHEN sbp.severity = 'Medium' THEN 2\n        ELSE 1\n      END as ord\n    FROM\n      security_analysis.security_checks sc,\n      security_analysis.security_best_practices sbp\n    where\n      score = 1\n      and sc.chk_name = sbp.chk_name\n      and run_id = (\n        select\n          max(runID)\n        from\n          security_analysis.run_number_table\n      )\n      and category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      sbp.category,\n      sbp.severity\n  ) as results,\n  (\n    SELECT\n      category,\n      count(*) as category_count\n    FROM\n      security_analysis.security_best_practices\n    WHERE\n      category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      category\n  ) as master\nwhere\n  results.category = master.category\n  ORDER BY category desc LIMIT 1000",
+                "runtime": 1.80038,
+                "schema": "security_analysis",
+                "start_time": "2022-08-11T19:43:52",
+                "status": 3
+            },
+            "latest_query_data_id": "9ae66e47-db29-47dd-a5ce-81b8ba9cc56d",
             "name": "SummaryStats",
             "options": {
                 "apply_auto_limit": true,
                 "parameters": [],
                 "run_as_role": "viewer",
+                "schema": "security_analysis",
                 "visualization_control_order": []
             },
             "permission_tier": "CAN_MANAGE",
-            "query": "SELECT\n  sbp.category,\n  sbp.severity,\n  count(sbp.severity) severity_count,\n  CASE\n    WHEN sbp.severity = 'High' THEN 3\n    WHEN sbp.severity = 'Medium' THEN 2\n    ELSE 1\n  END as ord\nFROM\n  security_analysis.security_checks sc,\n  security_analysis.security_best_practices sbp\nwhere\n  score = 1\n  and sc.chk_name = sbp.chk_name\n  and run_id = (\n    select\n      max(runID)\n    from\n      security_analysis.run_number_table\n  )\n  and category not IN ('Workspace Settings', 'Workspace Stats')\ngroup by\n  sbp.category,\n  sbp.severity\nORDER BY\n  ord",
+            "query": "Select\n  concat(\n    results.category,\n    ' (Out of ',\n    category_count,\n    ')'\n  ) as category,\n  severity,\n  severity_count,\n  ord\nFROM\n  (\n    SELECT\n      sbp.category,\n      sbp.severity,\n      count(sbp.severity) severity_count,\n      CASE\n        WHEN sbp.severity = 'High' THEN 3\n        WHEN sbp.severity = 'Medium' THEN 2\n        ELSE 1\n      END as ord\n    FROM\n      security_analysis.security_checks sc,\n      security_analysis.security_best_practices sbp\n    where\n      score = 1\n      and sc.chk_name = sbp.chk_name\n      and run_id = (\n        select\n          max(runID)\n        from\n          security_analysis.run_number_table\n      )\n      and category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      sbp.category,\n      sbp.severity\n  ) as results,\n  (\n    SELECT\n      category,\n      count(*) as category_count\n    FROM\n      security_analysis.security_best_practices\n    WHERE\n      category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      category\n  ) as master\nwhere\n  results.category = master.category\n  ",
             "query_draft": {
                 "apply_auto_limit": true,
                 "catalog": "",
-                "draft_text": "SELECT\n  sbp.category,\n  sbp.severity,\n  count(sbp.severity) severity_count,\n  CASE\n    WHEN sbp.severity = 'High' THEN 3\n    WHEN sbp.severity = 'Medium' THEN 2\n    ELSE 1\n  END as ord\nFROM\n  security_analysis.security_checks sc,\n  security_analysis.security_best_practices sbp\nwhere\n  score = 1\n  and sc.chk_name = sbp.chk_name\n  and run_id = (\n    select\n      max(runID)\n    from\n      security_analysis.run_number_table\n  )\n  and category not IN ('Workspace Settings', 'Workspace Stats')\ngroup by\n  sbp.category,\n  sbp.severity\nORDER BY\n  ord",
+                "draft_text": "Select\n  concat(\n    results.category,\n    ' (Out of ',\n    category_count,\n    ')'\n  ) as category,\n  severity,\n  severity_count,\n  ord\nFROM\n  (\n    SELECT\n      sbp.category,\n      sbp.severity,\n      count(sbp.severity) severity_count,\n      CASE\n        WHEN sbp.severity = 'High' THEN 3\n        WHEN sbp.severity = 'Medium' THEN 2\n        ELSE 1\n      END as ord\n    FROM\n      security_analysis.security_checks sc,\n      security_analysis.security_best_practices sbp\n    where\n      score = 1\n      and sc.chk_name = sbp.chk_name\n      and run_id = (\n        select\n          max(runID)\n        from\n          security_analysis.run_number_table\n      )\n      and category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      sbp.category,\n      sbp.severity\n  ) as results,\n  (\n    SELECT\n      category,\n      count(*) as category_count\n    FROM\n      security_analysis.security_best_practices\n    WHERE\n      category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      category\n  ) as master\nwhere\n  results.category = master.category\n  ",
                 "org_id": 1657683783405196,
-                "original_query_text": "SELECT sbp.category, sbp.severity , count(sbp.severity) severity_count,\nCASE WHEN sbp.severity='High' THEN 3 WHEN sbp.severity='Medium' THEN 2 ELSE 1 END as ord\nFROM security_analysis.security_checks sc, security_analysis.security_best_practices sbp\nwhere score = 1 and sc.chk_name = sbp.chk_name \nand run_id = (select max(runID) from security_analysis.run_number_table)\nand category not IN ('Workspace Settings','Workspace Stats')\ngroup by sbp.category,sbp.severity \nORDER BY ord",
+                "original_query_text": "Select\n  concat(\n    results.category,\n    ' (Out of ',\n    category_count,\n    ')'\n  ) as category,\n  severity,\n  severity_count,\n  ord\nFROM\n  (\n    SELECT\n      sbp.category,\n      sbp.severity,\n      count(sbp.severity) severity_count,\n      CASE\n        WHEN sbp.severity = 'High' THEN 3\n        WHEN sbp.severity = 'Medium' THEN 2\n        ELSE 1\n      END as ord\n    FROM\n      security_analysis.security_checks sc,\n      security_analysis.security_best_practices sbp\n    where\n      score = 1\n      and sc.chk_name = sbp.chk_name\n      and run_id = (\n        select\n          max(runID)\n        from\n          security_analysis.run_number_table\n      )\n      and category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      sbp.category,\n      sbp.severity\n  ) as results,\n  (\n    SELECT\n      category,\n      count(*) as category_count\n    FROM\n      security_analysis.security_best_practices\n    WHERE\n      category not IN ('Workspace Settings', 'Workspace Stats')\n    group by\n      category\n  ) as master\nwhere\n  results.category = master.category",
                 "parameters": [],
                 "query_id": "fdc33af2-0921-4fed-b320-08ed92eb4c18",
-                "schema": "",
-                "updated_at": "2022-08-04T21:48:06Z",
+                "schema": "security_analysis",
+                "updated_at": "2022-08-11T19:45:09Z",
                 "user_id": 6132399981223669
             },
             "run_as_role": "viewer",
@@ -5712,7 +5734,7 @@
             "tags": [
                 "SAT"
             ],
-            "updated_at": "2022-08-09T00:34:18Z",
+            "updated_at": "2022-08-15T00:33:59Z",
             "user": {
                 "email": "arun.pamulapati@databricks.com",
                 "id": 6132399981223669,
@@ -5971,6 +5993,7 @@
                                 "zIndex": 1
                             },
                             "column_c12ea4ac7628": {
+                                "type": "column",
                                 "yAxis": 0
                             }
                         },
@@ -6008,13 +6031,16 @@
                     "query_plan": {
                         "groups": [
                             {
-                                "column": "category"
+                                "column": "severity"
                             },
                             {
-                                "column": "severity"
+                                "column": "category"
                             }
                         ],
                         "selects": [
+                            {
+                                "column": "severity"
+                            },
                             {
                                 "column": "category"
                             },
@@ -6026,14 +6052,11 @@
                                     }
                                 ],
                                 "function": "SUM"
-                            },
-                            {
-                                "column": "severity"
                             }
                         ]
                     },
                     "type": "CHART",
-                    "updated_at": "2022-07-20T14:41:41Z"
+                    "updated_at": "2022-08-11T19:42:38Z"
                 },
                 {
                     "created_at": "2022-07-20T14:41:26Z",
