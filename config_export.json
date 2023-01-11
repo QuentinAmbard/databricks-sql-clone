@@ -1,0 +1,9 @@
+{
+  "source": {
+    "url": "https://yourdbe.cloud.databricks.com",
+    "token": "dapixxxxxxxxxxxxxxxxxx",
+    "dashboard_tags": ["xxxxx"]
+  },
+  "dashboard_id":"xxxx-xxxxx-xxxxx",
+  "dashboard_folder":"./dashboards/"  
+}
