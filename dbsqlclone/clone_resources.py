@@ -1,6 +1,6 @@
 import argparse
-from utils import clone_dashboard
-from utils.client import Client
+from .utils import clone_dashboard
+from .utils.client import Client
 import json
 
 
@@ -14,8 +14,6 @@ def get_client(config_file):
             client = Client(target["url"], target["token"], permissions=target["permissions"])
             if "endpoint_id" in target:
                 client.endpoint_id = target["endpoint_id"]
-            if "sql_database_name" in target:
-                client.sql_database_name = target["sql_database_name"]
             targets.append(client)
         return source, targets, config["delete_target_dashboards"]
 

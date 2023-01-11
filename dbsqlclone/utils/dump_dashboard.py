@@ -1,9 +1,10 @@
 import requests
-from utils.client import Client
+from .client import Client
 import json
 from concurrent.futures import ThreadPoolExecutor
 import collections
 import os
+import logging
 
 
 def dump_dashboards(source_client: Client, dashboard_ids):
@@ -12,7 +13,7 @@ def dump_dashboards(source_client: Client, dashboard_ids):
         collections.deque(executor.map(lambda args, f=dump_dashboard: f(*args), params))
 
 def dump_dashboard(source_client: Client, dashboard_id, folder_prefix="./dashboards/"):
-    dashboard = get_dashboard_by_id(source_client, dashboard_id)
+    dashboard = get_dashboard_definition_by_id(source_client, dashboard_id)
     if not folder_prefix.endswith("/"):
         folder_prefix += "/"
     if not os.path.exists(folder_prefix):
@@ -20,8 +21,8 @@ def dump_dashboard(source_client: Client, dashboard_id, folder_prefix="./dashboa
     with open(f'{folder_prefix}dashboard-{dashboard_id}.json', 'w') as file:
         file.write(json.dumps(dashboard, indent=4, sort_keys=True))
 
-def get_dashboard_by_id(source_client: Client, dashboard_id):
-    print(f"getting dashboard definition from {dashboard_id}...")
+def get_dashboard_definition_by_id(source_client: Client, dashboard_id):
+    logging.debug(f"getting dashboard definition from {dashboard_id}...")
     result = {"queries": []}
     dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
     result["dashboard"] = dashboard

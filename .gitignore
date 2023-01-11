@@ -1,3 +1,8 @@
+dbsqlclone/__pycache__/
+dbsqlclone/utils/__pycache__/
+dbsqlclone.egg-info/
+build/
+dist/
 state.json
 .idea
 utils/__pycache__

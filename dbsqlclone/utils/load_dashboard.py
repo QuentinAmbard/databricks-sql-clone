@@ -1,8 +1,13 @@
 import requests
-from utils.client import Client
+from dbsqlclone.utils.client import Client
 from concurrent.futures import ThreadPoolExecutor
 import json
 import collections
+import logging
+
+from .dump_dashboard import get_dashboard_definition_by_id
+from .clone_dashboard import delete_query
+
 
 def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
     if workspace_state is None:
@@ -19,11 +24,32 @@ def load_dashboard(target_client: Client, dashboard_id, dashboard_state, folder_
         folder_prefix += "/"
     with open(f'{folder_prefix}dashboard-{dashboard_id}.json', 'r') as r:
         dashboard = json.loads(r.read())
-        print(dashboard)
         dashboard_state = clone_dashboard(dashboard, target_client, dashboard_state)
         return dashboard_id, dashboard_state
 
-def clone_dashboard(dashboard, target_client: Client, dashboard_state):
+#Try to match the existing query based on the name. This is to avoid having to delete/recreate the queries everytime
+def recreate_dashboard_state(target_client, dashboard, dashboard_id):
+    #Get the definition of the existing dashboard
+    existing_dashboard = get_dashboard_definition_by_id(target_client, dashboard_id)
+    state = {"queries": {}, "visualizations": {}}
+    queries_not_matching = []
+    for q in existing_dashboard["queries"]:
+        matching_query = next((existing_q for existing_q in dashboard["queries"] if q['name'] == existing_q['name']), None)
+        if matching_query is None:
+            queries_not_matching.append(q)
+        else:
+            state[matching_query['id']] = {"new_id": q['id']}
+    return state, queries_not_matching
+
+
+#Override the existing_dashboard_id queries by trying to match them by name. If the name change, will create a new query and delete the existing one.
+def clone_dashboard_without_saved_state(dashboard, target_client: Client, existing_dashboard_id, parent: str = None):
+    dashboard_state, queries_not_matching = recreate_dashboard_state(target_client, dashboard, existing_dashboard_id)
+    clone_dashboard(dashboard, target_client, dashboard_state, parent)
+    for q in queries_not_matching:
+        delete_query(target_client, q)
+
+def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = {}, parent: str = None):
     if "queries" not in dashboard_state:
         dashboard_state["queries"] = {}
 
@@ -36,17 +62,17 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state):
                     if "parentQueryId" in p:
                         del p["parentQueryId"]
                     del p["value"]
-        new_query = clone_or_update_query(dashboard_state, q, target_client)
+        new_query = clone_or_update_query(dashboard_state, q, target_client, parent)
         if target_client.permisions_defined():
             permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
-            print(f"     Permissions set to {permissions}")
+            logging.debug(f"     Permissions set to {permissions}")
 
         visualizations = clone_query_visualization(target_client, q, new_query)
         dashboard_state["queries"][q["id"]] = {"new_id": new_query["id"], "visualizations": visualizations}
-    duplicate_dashboard(target_client, dashboard["dashboard"], dashboard_state)
+    duplicate_dashboard(target_client, dashboard["dashboard"], dashboard_state, parent)
     return dashboard_state
 
-def clone_or_update_query(dashboard_state, q, target_client):
+def clone_or_update_query(dashboard_state, q, target_client, parent):
     q_creation = {
         "data_source_id": target_client.data_source_id,
         "query": q["query"],
@@ -56,8 +82,10 @@ def clone_or_update_query(dashboard_state, q, target_client):
         "tags": q["tags"],
         "options": q["options"]
     }
-    if target_client.sql_database_name:
-        q_creation["query"] = q_creation["query"].replace("field_demos_retail", target_client.sql_database_name)
+    #Folder where the query will be installed
+    if parent is not None:
+        q_creation['parent'] = parent
+
     new_query = None
     if q['id'] in dashboard_state["queries"]:
         existing_query_id = dashboard_state["queries"][q['id']]["new_id"]
@@ -65,16 +93,16 @@ def clone_or_update_query(dashboard_state, q, target_client):
         existing_query = requests.get(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
                                       headers=target_client.headers).json()
         if 'id' in existing_query and 'moved_to_trash_at' not in existing_query:
-            print(f"     updating the existing query {existing_query_id}")
+            logging.debug(f"     updating the existing query {existing_query_id}")
             new_query = requests.post(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
                                       headers=target_client.headers, json=q_creation).json()
             # Delete all query visualization to reset its settings
             for v in new_query["visualizations"]:
-                print(f"     deleting query visualization {v['id']}")
+                logging.debug(f"     deleting query visualization {v['id']}")
                 requests.delete(target_client.url + "/api/2.0/preview/sql/visualizations/" + v["id"],
                                 headers=target_client.headers).json()
     if not new_query:
-        print(f"     cloning query {q_creation}...")
+        logging.debug(f"     cloning query {q_creation}...")
         new_query = requests.post(target_client.url + "/api/2.0/preview/sql/queries", headers=target_client.headers,
                                   json=q_creation).json()
     return new_query
@@ -104,11 +132,11 @@ def clone_query_visualization(client: Client, query, target_query):
         }
         if target_default_table is not None:
             mapping[orig_default_table["id"]] = target_default_table["id"]
-        print(f"         updating default Viz {target_default_table['id']}...")
+        logging.debug(f"         updating default Viz {target_default_table['id']}...")
         requests.post(client.url+"/api/2.0/preview/sql/visualizations/"+target_default_table["id"], headers = client.headers, json=default_table_viz_data)
     #Then create the other visualizations
     for v in sorted(query["visualizations"], key=lambda x: x["id"]):
-        print(v)
+        logging.debug(f"         cloning Viz {v['id']}...")
         data = {
             "name": v["name"],
             "description": v["description"],
@@ -122,29 +150,33 @@ def clone_query_visualization(client: Client, query, target_query):
     return mapping
 
 
-def duplicate_dashboard(client: Client, dashboard, dashboard_state):
+def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
     data = {"name": dashboard["name"], "tags": dashboard["tags"]}
+    #Folder where the dashboard will be installed
+    if parent is not None:
+        data['parent'] = parent
+
     new_dashboard = None
     if "new_id" in dashboard_state:
         existing_dashboard = requests.get(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers).json()
         if "options" in existing_dashboard and "moved_to_trash_at" not in existing_dashboard["options"]:
-            print("  dashboard exists, updating it")
+            logging.debug("  dashboard exists, updating it")
             new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
             #Drop all the widgets and re-create them
             for widget in new_dashboard["widgets"]:
-                print(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
+                logging.debug(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
                 requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
         else:
-            print("    couldn't find the dashboard defined in the state, it probably has been deleted.")
+            logging.debug("    couldn't find the dashboard defined in the state, it probably has been deleted.")
     if new_dashboard is None:
-        print(f"  creating new dashboard...")
+        logging.debug(f"  creating new dashboard...")
         new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data).json()
         dashboard_state["new_id"] = new_dashboard["id"]
     if client.permisions_defined():
         permissions = requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions).json()
-        print(f"     Dashboard permissions set to {permissions}")
+        logging.debug(f"     Dashboard permissions set to {permissions}")
     for widget in dashboard["widgets"]:
-        print(f"          cloning widget {widget}...")
+        logging.debug(f"          cloning widget {widget}...")
         visualization_id_clone = None
         if "visualization" in widget:
             query_id = widget["visualization"]["query"]["id"]

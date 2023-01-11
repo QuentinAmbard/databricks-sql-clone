@@ -10,7 +10,6 @@
       "url": "https://xxxx.cloud.databricks.com",
       "token": "xxxxxx",
       "endpoint_id": "xxxxxxxxxx4da979",
-      "sql_database_name": "xxx",
       "permissions":[
         {
           "group_name": "users",

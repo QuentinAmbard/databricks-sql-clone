@@ -3,7 +3,13 @@ Unofficial project to allow Databricks SQL dashboard copy from one workspace to 
 
 ## Resource clone
 
-### Setup:
+### Install:
+
+```
+pip install dbsqlclone
+```
+
+### Setup for built-in clone:
 Create a file named `config.json` and put your credentials. You need to define the source (where the resources will be copied from) and a list of targets (where the resources will be cloned).
 
 ```json
@@ -73,19 +79,46 @@ You can delete the state of a single workspace by searching the entry in the jso
 }
 ```
 
-## Working with git
+## Custom usage / Working with git
 
-### Saving dashboards as json:
+### Direct api usage
+
+Get dashboard definition as json:
+```
+from dbsqlclone.utils.client import Client
+from dbsqlclone.utils import dump_dashboard
+
+source_client = Client("<workspaceUrl>", "<workspaceToken>")
+dashboard_id_to_save = "xxx-xxx-xxx-xxx"
+dashboard_def = dump_dashboard.get_dashboard_definition_by_id(source_client, dashboard_id_to_save)
+print(json.dumps(dashboard_def))
+```
+
+Create the dashboard from the definition. This will just create a new one.
+```
+from dbsqlclone.utils import load_dashboard
+load_dashboard.clone_dashboard(dashboard_def, target_client, state={}, path=None)
+```
+
+Override an existing dashboard. This will try to update the dashboard queries when the query name match, and delete all queries not matching.
+```
+dashboard_to_override = "xxx-xxx-xxx-xxx"
+load_dashboard.clone_dashboard_without_saved_state(dashboard_def, target_client, dashboard_to_override)
+```
+
+
+### Saving dashboards as json with state file created in current folder:
 ```
     source_client = Client("<workspaceUrl>", "<workspaceToken>")
     dashboard_id_to_save = "xxx-xxx-xxx-xxx"
     dump_dashboard.dump_dashboard(source_client, dashboard_id_to_save, "./dashboards/")
 ```
 
+
 Dashboard jsons definition will then be saved under the specified folder `./dashboards/` and can be saved in git as required.
 
 
-### Loading dashboards from json:
+### Loading dashboards from json with state file created in current folder:
 Once the json is saved, you can load it to build or update the dashboard in any workspace.
 
 `dashboard_state` contains the link between the source and the cloned dashboard. 
