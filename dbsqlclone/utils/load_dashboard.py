@@ -31,7 +31,7 @@ def load_dashboard(target_client: Client, dashboard_id, dashboard_state, folder_
 def recreate_dashboard_state(target_client, dashboard, dashboard_id):
     #Get the definition of the existing dashboard
     existing_dashboard = get_dashboard_definition_by_id(target_client, dashboard_id)
-    state = {"queries": {}, "visualizations": {}}
+    state = {"queries": {}, "visualizations": {}, "new_id": existing_dashboard["dashboard"]["id"]}
     queries_not_matching = []
     for q in existing_dashboard["queries"]:
         matching_query = next((existing_q for existing_q in dashboard["queries"] if q['name'] == existing_q['name']), None)
@@ -45,9 +45,12 @@ def recreate_dashboard_state(target_client, dashboard, dashboard_id):
 #Override the existing_dashboard_id queries by trying to match them by name. If the name change, will create a new query and delete the existing one.
 def clone_dashboard_without_saved_state(dashboard, target_client: Client, existing_dashboard_id, parent: str = None):
     dashboard_state, queries_not_matching = recreate_dashboard_state(target_client, dashboard, existing_dashboard_id)
-    clone_dashboard(dashboard, target_client, dashboard_state, parent)
+    logging.debug(dashboard_state)
+    state = clone_dashboard(dashboard, target_client, dashboard_state, parent)
     for q in queries_not_matching:
+        logging.debug(f"deleting query {q}")
         delete_query(target_client, q)
+    return state
 
 def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = {}, parent: str = None):
     if "queries" not in dashboard_state:
@@ -63,6 +66,7 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = {}
                         del p["parentQueryId"]
                     del p["value"]
         new_query = clone_or_update_query(dashboard_state, q, target_client, parent)
+        logging.debug(new_query)
         if target_client.permisions_defined():
             permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
             logging.debug(f"     Permissions set to {permissions}")
@@ -85,7 +89,7 @@ def clone_or_update_query(dashboard_state, q, target_client, parent):
     #Folder where the query will be installed
     if parent is not None:
         q_creation['parent'] = parent
-
+    logging.debug(q_creation)
     new_query = None
     if q['id'] in dashboard_state["queries"]:
         existing_query_id = dashboard_state["queries"][q['id']]["new_id"]
@@ -162,10 +166,13 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
         if "options" in existing_dashboard and "moved_to_trash_at" not in existing_dashboard["options"]:
             logging.debug("  dashboard exists, updating it")
             new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
-            #Drop all the widgets and re-create them
-            for widget in new_dashboard["widgets"]:
-                logging.debug(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
-                requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
+            if "widgets" not in new_dashboard:
+                print(f"ERROR: dashboard doesn't have widget, shouldn't happen - {new_dashboard}")
+            else:
+                #Drop all the widgets and re-create them
+                for widget in new_dashboard["widgets"]:
+                    logging.debug(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
+                    requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers).json()
         else:
             logging.debug("    couldn't find the dashboard defined in the state, it probably has been deleted.")
     if new_dashboard is None:

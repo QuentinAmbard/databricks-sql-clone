@@ -96,12 +96,16 @@ print(json.dumps(dashboard_def))
 
 Create the dashboard from the definition. This will just create a new one.
 ```
+target_client.endpoint_id = "the endpoint=warehouse ID"
+#We need to find the datasource from endpoint id
+clone_dashboard.set_data_source_id_from_endpoint_id(target_client)
 from dbsqlclone.utils import load_dashboard
 load_dashboard.clone_dashboard(dashboard_def, target_client, state={}, path=None)
 ```
 
 Override an existing dashboard. This will try to update the dashboard queries when the query name match, and delete all queries not matching.
 ```
+target_client.data_source_id = "the datasource or warehouse ID to use"
 dashboard_to_override = "xxx-xxx-xxx-xxx"
 load_dashboard.clone_dashboard_without_saved_state(dashboard_def, target_client, dashboard_to_override)
 ```

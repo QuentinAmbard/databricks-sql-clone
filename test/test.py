@@ -1,6 +1,7 @@
 import argparse
 from dbsqlclone.utils import load_dashboard
 from dbsqlclone.utils import dump_dashboard
+from dbsqlclone.utils import clone_dashboard
 from dbsqlclone.utils.client import Client
 import json
 
@@ -33,10 +34,18 @@ dashboard_to_clone = "048c6d42-ad56-4667-ada1-e35f80164248"
 target_client = target_clients[0]
 
 
-dashboard_def = dump_dashboard.get_dashboard_definition_by_id(source_client, dashboard_to_clone)
-print(dashboard_def)
+#dashboard_def = dump_dashboard.get_dashboard_definition_by_id(source_client, dashboard_to_clone)
+#print(dashboard_def)
 #To recreate a new dashboard
-load_dashboard.clone_dashboard_without_saved_state(dashboard_def, target_client, "1d50a091-a85a-4650-92be-eb956ab7c5e8")
+with open("test/19394330-2274-4b4b-90ce-d415a7ff2130.json", "r") as r:
+    dashboard_def = json.loads(r.read())
+
+target_client.endpoint_id = "af7c852cda9c4198"
+#clone_dashboard.set_data_source_id_from_endpoint_id(target_client)
+existing_id = "19394330-2274-4b4b-90ce-d415a7ff2130"
+state = load_dashboard.clone_dashboard_without_saved_state(dashboard_def, target_client, existing_id)
+print(state)
+assert state['new_id'] == existing_id
 #load_dashboard.clone_dashboard(dashboard_def, target_client, {}, None)
 
 
