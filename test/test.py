@@ -29,7 +29,7 @@ args = parser.parse_args()
 
 source_client, target_clients, delete_target_dashboards = get_client(args.config_file)
 
-dashboard_to_clone = "048c6d42-ad56-4667-ada1-e35f80164248"
+dashboard_to_clone = "1e236ef7-cf58-4bfc-b861-5e6a0c105e51"
 
 target_client = target_clients[0]
 
@@ -37,12 +37,15 @@ target_client = target_clients[0]
 #dashboard_def = dump_dashboard.get_dashboard_definition_by_id(source_client, dashboard_to_clone)
 #print(dashboard_def)
 #To recreate a new dashboard
-with open("test/19394330-2274-4b4b-90ce-d415a7ff2130.json", "r") as r:
+with open(f"test/{dashboard_to_clone}.json", "r") as r:
     dashboard_def = json.loads(r.read())
 
-target_client.endpoint_id = "af7c852cda9c4198"
-#clone_dashboard.set_data_source_id_from_endpoint_id(target_client)
-existing_id = "19394330-2274-4b4b-90ce-d415a7ff2130"
+#target_client.data_source_id = "aa143a10-aad0-41a3-a7bd-9158962b4d2c"
+target_client.endpoint_id = "dcc40c6f1a1d3a58"
+"b6e77fa5-a422-4a3e-aaa6-2d5add0ed822"
+clone_dashboard.set_data_source_id_from_endpoint_id(target_client)
+print(target_client.data_source_id)
+existing_id = "cead8c7d-8246-4922-a32b-5c5e74762a1e"
 state = load_dashboard.clone_dashboard_without_saved_state(dashboard_def, target_client, existing_id)
 print(state)
 assert state['new_id'] == existing_id

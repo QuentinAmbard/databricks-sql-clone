@@ -14,7 +14,7 @@ def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
         workspace_state = {}
     params = [(target_client, dashboard_id, workspace_state[dashboard_id] if dashboard_id in workspace_state else {}) for dashboard_id in dashboard_ids]
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         for (dashboard_id, dashboard_state) in executor.map(lambda args, f=load_dashboard: f(*args), params):
             workspace_state[dashboard_id] = dashboard_state
     return workspace_state
@@ -58,7 +58,7 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
     if "queries" not in dashboard_state:
         dashboard_state["queries"] = {}
 
-    for q in dashboard["queries"]:
+    def load_query(q):
         #We need to replace the param queries with the newly created one
         if "parameters" in q["options"]:
             for p in q["options"]["parameters"]:
@@ -72,9 +72,12 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
         if target_client.permisions_defined():
             permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
             logging.debug(f"     Permissions set to {permissions}")
-
         visualizations = clone_query_visualization(target_client, q, new_query)
         dashboard_state["queries"][q["id"]] = {"new_id": new_query["id"], "visualizations": visualizations}
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        collections.deque(executor.map(load_query, dashboard["queries"]))
+
     duplicate_dashboard(target_client, dashboard["dashboard"], dashboard_state, parent)
     return dashboard_state
 
@@ -170,7 +173,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
             logging.debug("  dashboard exists, updating it")
             new_dashboard = requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data).json()
             if "widgets" not in new_dashboard:
-                print(f"ERROR: dashboard doesn't have widget, shouldn't happen - {new_dashboard}")
+                logging.debug(f"ERROR: dashboard doesn't have widget, shouldn't happen - {new_dashboard}")
             else:
                 #Drop all the widgets and re-create them
                 for widget in new_dashboard["widgets"]:
@@ -185,7 +188,8 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
     if client.permisions_defined():
         permissions = requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions).json()
         logging.debug(f"     Dashboard permissions set to {permissions}")
-    for widget in dashboard["widgets"]:
+
+    def load_widget(widget):
         logging.debug(f"          cloning widget {widget}...")
         visualization_id_clone = None
         if "visualization" in widget:
@@ -200,5 +204,9 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
             "width": widget["width"]
         }
         requests.post(client.url+"/api/2.0/preview/sql/widgets", headers = client.headers, json=data).json()
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        collections.deque(executor.map(load_widget, dashboard["widgets"]))
+
 
     return new_dashboard
