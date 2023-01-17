@@ -38,7 +38,7 @@ def recreate_dashboard_state(target_client, dashboard, dashboard_id):
         if matching_query is None:
             queries_not_matching.append(q)
         else:
-            state[matching_query['id']] = {"new_id": q['id']}
+            state["queries"][matching_query['id']] = {"new_id": q['id']}
     return state, queries_not_matching
 
 
@@ -52,7 +52,9 @@ def clone_dashboard_without_saved_state(dashboard, target_client: Client, existi
         delete_query(target_client, q)
     return state
 
-def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = {}, parent: str = None):
+def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = None, parent: str = None):
+    if dashboard_state is None:
+        dashboard_state = {}
     if "queries" not in dashboard_state:
         dashboard_state["queries"] = {}
 

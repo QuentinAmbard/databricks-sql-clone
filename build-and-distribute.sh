@@ -1,6 +1,6 @@
 #increase the release (needs pip install bump)
 bump
-#pachage
+#package
 rm -rf ./dist/*
 python3 setup.py clean --all bdist_wheel
 echo "Package built under dist/ - updating pypi with new version..."
