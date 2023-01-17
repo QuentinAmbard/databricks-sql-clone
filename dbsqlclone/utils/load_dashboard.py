@@ -82,14 +82,13 @@ def clone_or_update_query(dashboard_state, q, target_client, parent):
         "query": q["query"],
         "name": q["name"],
         "description": q["description"],
-        "schedule": q["schedule"],
-        "tags": q["tags"],
+        "schedule": q.get("schedule", None),
+        "tags": q.get("tags", None),
         "options": q["options"]
     }
     #Folder where the query will be installed
     if parent is not None:
         q_creation['parent'] = parent
-    logging.debug(q_creation)
     new_query = None
     if q['id'] in dashboard_state["queries"]:
         existing_query_id = dashboard_state["queries"][q['id']]["new_id"]
@@ -155,7 +154,9 @@ def clone_query_visualization(client: Client, query, target_query):
 
 
 def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
-    data = {"name": dashboard["name"], "tags": dashboard["tags"]}
+    data = {"name": dashboard["name"],
+            "tags": dashboard["tags"],
+            "data_source_id": client.data_source_id}
     #Folder where the dashboard will be installed
     if parent is not None:
         data['parent'] = parent
