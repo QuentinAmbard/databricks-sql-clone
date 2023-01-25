@@ -66,17 +66,24 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
                     p["queryId"] = dashboard_state["queries"][p["queryId"]]["new_id"]
                     if "parentQueryId" in p:
                         del p["parentQueryId"]
-                    del p["value"]
+                    #if "value" in p:
+                    #    del p["value"]
+                    #if "$$value" in p:
+                    #    del p["$$value"]
         new_query = clone_or_update_query(dashboard_state, q, target_client, parent)
         logging.debug(new_query)
         if target_client.permisions_defined():
-            permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions).json()
+            permissions = requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions)
             logging.debug(f"     Permissions set to {permissions}")
         visualizations = clone_query_visualization(target_client, q, new_query)
         dashboard_state["queries"][q["id"]] = {"new_id": new_query["id"], "visualizations": visualizations}
 
+    for q in dashboard["queries"] :
+        if "is_parameter_query" not in q or q["is_parameter_query"]:
+            load_query(q)
+
     with ThreadPoolExecutor(max_workers=10) as executor:
-        collections.deque(executor.map(load_query, dashboard["queries"]))
+        collections.deque(executor.map(load_query, [q for q in dashboard["queries"] if "is_parameter_query" in q and not q["is_parameter_query"]]))
 
     duplicate_dashboard(target_client, dashboard["dashboard"], dashboard_state, parent)
     return dashboard_state
@@ -154,6 +161,7 @@ def clone_query_visualization(client: Client, query, target_query):
             "query_id": target_query["id"],
         }
         new_v = requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data).json()
+        print(new_v)
         mapping[v["id"]] = new_v["id"]
     return mapping
 

@@ -27,11 +27,13 @@ def get_dashboard_definition_by_id(source_client: Client, dashboard_id):
     dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
     result["dashboard"] = dashboard
     query_ids = list()
+    param_query_ids = set()
 
     def recursively_append_param_queries(q):
         for p in q["options"]["parameters"]:
             if "queryId" in p:
                 query_ids.insert(0, p["queryId"])
+                param_query_ids.add(p["queryId"])
                 #get the details of the underlying query to recursively append children queries from parameters if any
                 child_q = requests.get(source_client.url + "/api/2.0/preview/sql/queries/" + p["queryId"], headers=source_client.headers).json()
                 recursively_append_param_queries(child_q)
@@ -48,5 +50,6 @@ def get_dashboard_definition_by_id(source_client: Client, dashboard_id):
     query_ids = list(dict.fromkeys(query_ids))
     for query_id in query_ids:
         q = requests.get(source_client.url + "/api/2.0/preview/sql/queries/" + query_id, headers=source_client.headers).json()
+        q["is_parameter_query"] = query_id in param_query_ids
         result["queries"].append(q)
     return result
