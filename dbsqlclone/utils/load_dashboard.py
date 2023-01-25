@@ -161,7 +161,6 @@ def clone_query_visualization(client: Client, query, target_query):
             "query_id": target_query["id"],
         }
         new_v = requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data).json()
-        print(new_v)
         mapping[v["id"]] = new_v["id"]
     return mapping
 
