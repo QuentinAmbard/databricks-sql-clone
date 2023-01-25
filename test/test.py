@@ -29,7 +29,7 @@ args = parser.parse_args()
 
 source_client, target_clients, delete_target_dashboards = get_client(args.config_file)
 
-dashboard_to_clone = "1e236ef7-cf58-4bfc-b861-5e6a0c105e51"
+dashboard_to_clone = "19394330-2274-4b4b-90ce-d415a7ff2130"
 
 target_client = target_clients[0]
 

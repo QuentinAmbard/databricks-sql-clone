@@ -78,10 +78,11 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
         visualizations = clone_query_visualization(target_client, q, new_query)
         dashboard_state["queries"][q["id"]] = {"new_id": new_query["id"], "visualizations": visualizations}
 
+    #First loads the queries used as parameters. They need to be loaded first as the other will depend on these
     for q in dashboard["queries"] :
         if "is_parameter_query" not in q or q["is_parameter_query"]:
             load_query(q)
-
+    #Then loads everything else, no matter the order
     with ThreadPoolExecutor(max_workers=10) as executor:
         collections.deque(executor.map(load_query, [q for q in dashboard["queries"] if "is_parameter_query" in q and not q["is_parameter_query"]]))
 
@@ -161,6 +162,8 @@ def clone_query_visualization(client: Client, query, target_query):
             "query_id": target_query["id"],
         }
         new_v = requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data).json()
+        if "id" not in new_v:
+            raise Exception(f"couldn't create visualization - shouldn't happen {new_v} - {data}")
         mapping[v["id"]] = new_v["id"]
     return mapping
 
