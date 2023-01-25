@@ -8,6 +8,8 @@ import collections
 from dbsqlclone.utils.dump_dashboard import dump_dashboards
 import logging
 
+logger = logging.getLogger('dbsqlclone.clone')
+
 def get_all_dashboards(client: Client, tags = []):
     return get_all_item(client, "dashboards", tags)
 
@@ -15,21 +17,21 @@ def get_all_queries(client: Client, tags = []):
     return get_all_item(client, "queries", tags)
 
 def delete_dashboard(client: Client, tags=[], ids_to_skip={}):
-    logging.debug(f"cleaning up dashboards with tags in {tags}...")
+    logger.debug(f"cleaning up dashboards with tags in {tags}...")
     for d in get_all_dashboards(client, tags):
         if d['id'] not in ids_to_skip:
-            logging.debug(f"deleting dashboard {d['id']} - {d['name']}")
+            logger.debug(f"deleting dashboard {d['id']} - {d['name']}")
             requests.delete(client.url+"/api/2.0/preview/sql/dashboards/"+d["id"], headers = client.headers).json()
 
 def delete_queries(client: Client, tags=[], ids_to_skip={}):
-    logging.debug(f"cleaning up queries with tags in {tags}...")
+    logger.debug(f"cleaning up queries with tags in {tags}...")
     queries_to_delete = get_all_queries(client, tags)
     params = [(client, q) for q in queries_to_delete if q['id'] not in ids_to_skip]
     with ThreadPoolExecutor(max_workers=10) as executor:
         collections.deque(executor.map(lambda args, f=delete_query: f(*args), params))
 
 def delete_query(client: Client, q):
-    logging.debug(f"deleting query {q['id']} - {q['name']}")
+    logger.debug(f"deleting query {q['id']} - {q['name']}")
     requests.delete(client.url+"/api/2.0/preview/sql/queries/"+q["id"], headers = client.headers).json()
 
 def get_all_item(client: Client, item, tags = []):
@@ -48,7 +50,7 @@ def get_all_item(client: Client, item, tags = []):
 def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: Client, tags: List,
                                           delete_target_dashboards: bool, state):
     assert len(tags) > 0
-    logging.debug(f"fetching existing dashboard with tags in {tags}...")
+    logger.debug(f"fetching existing dashboard with tags in {tags}...")
     workspace_state_id = source_client.url+"-"+target_client.url
 
     dashboards_to_clone = get_all_dashboards(source_client, tags)
@@ -56,7 +58,7 @@ def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: 
         state[workspace_state_id] = {}
     workspace_state = state[workspace_state_id]
 
-    logging.debug(f"start cloning {len(dashboards_to_clone)} dashboards...")
+    logger.debug(f"start cloning {len(dashboards_to_clone)} dashboards...")
     dashboard_to_clone_ids = [d["id"] for d in dashboards_to_clone]
 
     dump_dashboards(source_client, dashboard_to_clone_ids)
@@ -73,23 +75,23 @@ def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: 
         delete_queries(target_client, tags, new_queries)
         delete_dashboard(target_client, tags, new_dashboards)
 
-    logging.debug("-----------------------")
-    logging.debug("import complete. Saving state for further update/analysis.")
-    logging.debug(state)
+    logger.debug("-----------------------")
+    logger.debug("import complete. Saving state for further update/analysis.")
+    logger.debug(state)
     with open('state.json', 'w') as file:
         file.write(json.dumps(state, indent=4, sort_keys=True))
 
 
 def set_data_source_id_from_endpoint_id(client):
-    logging.debug("Fetching endpoints to extract data_source id...")
+    logger.debug("Fetching endpoints to extract data_source id...")
     data_sources = requests.get(client.url+"/api/2.0/preview/sql/data_sources", headers=client.headers).json()
     assert len(data_sources) > 0, "No endpoints available. Please create at least 1 endpoint before cloning the dashboards."
     if client.endpoint_id is None:
-        logging.debug(f"No endpoint id found. Using the first endpoint available: {data_sources[0]}")
+        logger.debug(f"No endpoint id found. Using the first endpoint available: {data_sources[0]}")
         client.data_source_id = data_sources[0]['id']
     for data_source in data_sources:
         if "endpoint_id" in data_source and data_source['endpoint_id'] == client.endpoint_id:
-            logging.debug(f"found datasource {data_source['id']} for endpoint {data_source['endpoint_id']}")
+            logger.debug(f"found datasource {data_source['id']} for endpoint {data_source['endpoint_id']}")
             client.data_source_id = data_source['id']
             break
     assert client.data_source_id is not None, f"Couldn't find an endpoint with ID {client.endpoint_id} in workspace {client.url}. Please use the endpoint ID from the URL."

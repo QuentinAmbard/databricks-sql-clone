@@ -6,6 +6,8 @@ import collections
 import os
 import logging
 
+logger = logging.getLogger('dbsqlclone.dump')
+
 
 def dump_dashboards(source_client: Client, dashboard_ids):
     params = [(source_client, id) for id in dashboard_ids]
@@ -22,7 +24,7 @@ def dump_dashboard(source_client: Client, dashboard_id, folder_prefix="./dashboa
         file.write(json.dumps(dashboard, indent=4, sort_keys=True))
 
 def get_dashboard_definition_by_id(source_client: Client, dashboard_id):
-    logging.debug(f"getting dashboard definition from {dashboard_id}...")
+    logger.debug(f"getting dashboard definition from {dashboard_id}...")
     result = {"queries": [], "id": dashboard_id}
     dashboard = requests.get(source_client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_id, headers = source_client.headers).json()
     result["dashboard"] = dashboard

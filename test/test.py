@@ -33,6 +33,9 @@ dashboard_to_clone = "19394330-2274-4b4b-90ce-d415a7ff2130"
 
 target_client = target_clients[0]
 
+import logging
+logging.basicConfig()
+load_dashboard.logger_load.setLevel(logging.DEBUG)
 
 #dashboard_def = dump_dashboard.get_dashboard_definition_by_id(source_client, dashboard_to_clone)
 #print(dashboard_def)
