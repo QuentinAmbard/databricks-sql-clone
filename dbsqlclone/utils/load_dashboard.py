@@ -10,12 +10,14 @@ from .clone_dashboard import delete_query
 
 logger = logging.getLogger('dbsqlclone.load')
 
+max_workers = 3
+
 def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
     if workspace_state is None:
         workspace_state = {}
     params = [(target_client, dashboard_id, workspace_state[dashboard_id] if dashboard_id in workspace_state else {}) for dashboard_id in dashboard_ids]
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         for (dashboard_id, dashboard_state) in executor.map(lambda args, f=load_dashboard: f(*args), params):
             workspace_state[dashboard_id] = dashboard_state
     return workspace_state
@@ -84,7 +86,7 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
         if "is_parameter_query" not in q or q["is_parameter_query"]:
             load_query(q)
     #Then loads everything else, no matter the order
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         collections.deque(executor.map(load_query, [q for q in dashboard["queries"] if "is_parameter_query" in q and not q["is_parameter_query"]]))
 
     duplicate_dashboard(target_client, dashboard["dashboard"], dashboard_state, parent)
@@ -113,6 +115,8 @@ def clone_or_update_query(dashboard_state, q, target_client, parent):
             logger.debug(f"     updating the existing query {existing_query_id}")
             new_query = requests.post(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id,
                                       headers=target_client.headers, json=q_creation).json()
+            if "visualizations" not in new_query:
+                raise Exception(f"can't update query or query without vis. Shouldn't happen: {new_query} - {q_creation} - {existing_query_id}")
             # Delete all query visualization to reset its settings
             for v in new_query["visualizations"]:
                 logger.debug(f"     deleting query visualization {v['id']}")
@@ -216,7 +220,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
         }
         requests.post(client.url+"/api/2.0/preview/sql/widgets", headers = client.headers, json=data).json()
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         collections.deque(executor.map(load_widget, dashboard["widgets"]))
 
 
