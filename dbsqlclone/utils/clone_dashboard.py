@@ -23,7 +23,7 @@ def delete_dashboard(client: Client, tags=[], ids_to_skip={}):
     for d in get_all_dashboards(client, tags):
         if d['id'] not in ids_to_skip:
             logger.debug(f"deleting dashboard {d['id']} - {d['name']}")
-            with requests.delete(client.url+"/api/2.0/preview/sql/dashboards/"+d["id"], headers = client.headers, timeout=30) as r:
+            with requests.delete(client.url+"/api/2.0/preview/sql/dashboards/"+d["id"], headers = client.headers, timeout=120) as r:
                 r.json()
 
 def delete_queries(client: Client, tags=[], ids_to_skip={}):
@@ -35,14 +35,14 @@ def delete_queries(client: Client, tags=[], ids_to_skip={}):
 
 def delete_query(client: Client, q):
     logger.debug(f"deleting query {q['id']} - {q['name']}")
-    with requests.delete(client.url+"/api/2.0/preview/sql/queries/"+q["id"], headers = client.headers, timeout=30) as r:
+    with requests.delete(client.url+"/api/2.0/preview/sql/queries/"+q["id"], headers = client.headers, timeout=120) as r:
         return r.json()
 
 def get_all_item(client: Client, item, tags = []):
     assert item == "queries" or item == "dashboards"
     page_size = 250
     def get_all_dashboards(dashboards, page):
-        with requests.get(client.url+"/api/2.0/preview/sql/"+item, headers = client.headers, params={"page_size": page_size, "page": page}, timeout=30) as r:
+        with requests.get(client.url+"/api/2.0/preview/sql/"+item, headers = client.headers, params={"page_size": page_size, "page": page}, timeout=120) as r:
             r = r.json()
         #Filter to keep only dashboard with the proper tags
         dashboards_tags = [d for d in r["results"] if len(set(d["tags"]) & set(tags)) > 0]
@@ -89,7 +89,7 @@ def delete_and_clone_dashboards_with_tags(source_client: Client, target_client: 
 
 def set_data_source_id_from_endpoint_id(client):
     logger.debug("Fetching endpoints to extract data_source id...")
-    with requests.get(client.url+"/api/2.0/preview/sql/data_sources", headers=client.headers, timeout=30) as r:
+    with requests.get(client.url+"/api/2.0/preview/sql/data_sources", headers=client.headers, timeout=120) as r:
         data_sources = r.json()
     assert len(data_sources) > 0, "No endpoints available. Please create at least 1 endpoint before cloning the dashboards."
     if client.endpoint_id is None:
