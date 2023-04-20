@@ -14,14 +14,6 @@ max_workers = 3
 
 
 import requests
-from requests.adapters import Retry, HTTPAdapter
-
-retry = Retry(total=10, connect=5, read=5)
-session = requests.Session()
-session.mount("http://", HTTPAdapter(max_retries=retry))
-resp = session.get("https://jsonplaceholder.typicode.com/posts")
-print(resp.json())
-
 
 def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
     if workspace_state is None:
