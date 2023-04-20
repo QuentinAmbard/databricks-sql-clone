@@ -1,3 +1,5 @@
+import time
+
 import requests
 from dbsqlclone.utils.client import Client
 from concurrent.futures import ThreadPoolExecutor
@@ -11,7 +13,8 @@ from .clone_dashboard import delete_query
 logger = logging.getLogger('dbsqlclone.load')
 
 max_workers = 3
-
+#Temp fix to slow down GCP queries as API is unstable
+sleep_between_queries = 0
 
 import requests
 
@@ -129,6 +132,7 @@ def clone_or_update_query(dashboard_state, q, target_client, parent):
                     r.json()
     if not new_query:
         logger.debug(f"     cloning query {q_creation}...")
+        time.sleep(sleep_between_queries)
         with requests.post(target_client.url + "/api/2.0/preview/sql/queries", headers=target_client.headers,json=q_creation, timeout=120) as r:
             new_query = r.json()
     return new_query
@@ -159,6 +163,7 @@ def clone_query_visualization(client: Client, query, target_query):
         if target_default_table is not None:
             mapping[orig_default_table["id"]] = target_default_table["id"]
         logger.debug(f"         updating default Viz {target_default_table['id']}...")
+        time.sleep(sleep_between_queries)
         with requests.post(client.url+"/api/2.0/preview/sql/visualizations/"+target_default_table["id"], headers = client.headers, json=default_table_viz_data, timeout=120) as r:
             r.json()
     #Then create the other visualizations
@@ -172,6 +177,8 @@ def clone_query_visualization(client: Client, query, target_query):
             "query_plan": v["query_plan"],
             "query_id": target_query["id"],
         }
+        #Fix for GCP, too sensitive to timeout if we send too many queries
+        time.sleep(sleep_between_queries)
         with requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data, timeout=120) as r:
             new_v = r.json()
         if "id" not in new_v:
@@ -202,12 +209,14 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
                 #Drop all the widgets and re-create them
                 for widget in new_dashboard["widgets"]:
                     logger.debug(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
+                    time.sleep(sleep_between_queries)
                     with requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers, timeout=120) as r:
                         r.json()
         else:
             logger.debug("    couldn't find the dashboard defined in the state, it probably has been deleted.")
     if new_dashboard is None:
         logger.debug(f"  creating new dashboard...")
+        time.sleep(sleep_between_queries)
         with requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data, timeout=120) as r:
             new_dashboard = r.json()
         dashboard_state["new_id"] = new_dashboard["id"]
@@ -230,6 +239,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
             "options": widget["options"],
             "width": widget["width"]
         }
+        time.sleep(sleep_between_queries)
         with requests.post(client.url+"/api/2.0/preview/sql/widgets", headers = client.headers, json=data, timeout=120) as r:
             r.json()
 
