@@ -13,10 +13,6 @@ from .clone_dashboard import delete_query
 logger = logging.getLogger('dbsqlclone.load')
 
 max_workers = 3
-#Temp fix to slow down GCP queries as API is unstable
-sleep_between_queries = 0
-
-import requests
 
 def load_dashboards(target_client: Client, dashboard_ids, workspace_state):
     if workspace_state is None:
@@ -83,16 +79,59 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
         logger.debug(new_query)
         if "id" in new_query:
             if target_client.permisions_defined():
-                with requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions, timeout=120) as r:
+                with requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions) as r:
                     permissions = r.json()
                 logger.debug(f"     Permissions set to {permissions}")
             visualizations = clone_query_visualization(target_client, q, new_query)
             dashboard_state["queries"][q["id"]] = {"new_id": new_query["id"], "visualizations": visualizations}
 
     #First loads the queries used as parameters. They need to be loaded first as the other will depend on these
+    tasks = []
     for q in dashboard["queries"] :
         if "is_parameter_query" not in q or q["is_parameter_query"]:
             load_query(q)
+            tasks.append({
+                "task_key": "run_param_query_"+dashboard_state["queries"][q["id"]]["new_id"],
+                "sql_task": {
+                    "query": {
+                        "query_id": dashboard_state["queries"][q["id"]]["new_id"]
+                    },
+                    "warehouse_id": target_client.endpoint_id
+                }
+            })
+    #Params requests now need to be run first. Starts a job to run them all and wait for the job...
+    if len(tasks) > 0:
+        print("Your dashboard has widgets. Widget queries need to be run first to be able to load other queries.")
+        print("DBSQL-CLONE will now submit a job run to start the param queries. This will take a few minutes without serverless (few sec with serverless)...")
+        from datetime import datetime
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
+        settings = {
+            "run_name": "dbdemos_init_param_queries_"+dt_string,
+            "tasks": tasks
+        }
+        with requests.post(target_client.url+"/api/2.1/jobs/runs/submit", headers = target_client.headers, json=settings) as r:
+            run = r.json()
+            if 'error_code' in run:
+                print(f"ERROR initializing the param queries job: {run} - params= {settings}. Downstream import will likely fail.")
+        for i in range(100):
+            i =+ 1
+            with requests.get(target_client.url+"/api/2.1/jobs/runs/get", headers = target_client.headers, params=run) as r:
+                if i >= 99 or "result_state" in r.json()["state"]:
+                    if i >= 99:
+                        print(f"ERROR initializing param queries. it looks like your init job is still running: {run} .")
+                    elif r.json()["state"]["result_state"] != "SUCCESS":
+                        print("ERROR initializing param queries. This will likely make next import to run as param query results are needed before using them in a new query.")
+                        print(f"To fix this issue, try to manually run the queries as defined in the job run {run}")
+                    else:
+                        print("Param queries initialization successful. Resume dashboard import...")
+                    break
+                else:
+                    print(f"waiting for param queries to run as they're need to import the next queries. run  {run}...")
+                    time.sleep(10)
+
+
+
     #Then loads everything else, no matter the order
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         collections.deque(executor.map(load_query, [q for q in dashboard["queries"] if "is_parameter_query" in q and not q["is_parameter_query"]]))
@@ -117,23 +156,22 @@ def clone_or_update_query(dashboard_state, q, target_client, parent):
     if q['id'] in dashboard_state["queries"]:
         existing_query_id = dashboard_state["queries"][q['id']]["new_id"]
         # check if the query still exists (it might have been manually deleted by mistake)
-        with requests.get(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id, headers=target_client.headers, timeout=120) as r:
+        with requests.get(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id, headers=target_client.headers) as r:
             existing_query = r.json()
         if 'id' in existing_query and 'moved_to_trash_at' not in existing_query:
             logger.debug(f"     updating the existing query {existing_query_id}")
-            with requests.post(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id, headers=target_client.headers, json=q_creation, timeout=120) as r:
+            with requests.post(target_client.url + "/api/2.0/preview/sql/queries/" + existing_query_id, headers=target_client.headers, json=q_creation) as r:
                 new_query = r.json()
             if "visualizations" not in new_query:
                 raise Exception(f"can't update query or query without vis. Shouldn't happen: {new_query} - {q_creation} - {existing_query_id}")
             # Delete all query visualization to reset its settings
             for v in new_query["visualizations"]:
                 logger.debug(f"     deleting query visualization {v['id']}")
-                with requests.delete(target_client.url + "/api/2.0/preview/sql/visualizations/" + v["id"], headers=target_client.headers, timeout=120) as r:
+                with requests.delete(target_client.url + "/api/2.0/preview/sql/visualizations/" + v["id"], headers=target_client.headers) as r:
                     r.json()
     if not new_query:
         logger.debug(f"     cloning query {q_creation}...")
-        time.sleep(sleep_between_queries)
-        with requests.post(target_client.url + "/api/2.0/preview/sql/queries", headers=target_client.headers,json=q_creation, timeout=120) as r:
+        with requests.post(target_client.url + "/api/2.0/preview/sql/queries", headers=target_client.headers,json=q_creation) as r:
             new_query = r.json()
     return new_query
 
@@ -163,8 +201,7 @@ def clone_query_visualization(client: Client, query, target_query):
         if target_default_table is not None:
             mapping[orig_default_table["id"]] = target_default_table["id"]
         logger.debug(f"         updating default Viz {target_default_table['id']}...")
-        time.sleep(sleep_between_queries)
-        with requests.post(client.url+"/api/2.0/preview/sql/visualizations/"+target_default_table["id"], headers = client.headers, json=default_table_viz_data, timeout=120) as r:
+        with requests.post(client.url+"/api/2.0/preview/sql/visualizations/"+target_default_table["id"], headers = client.headers, json=default_table_viz_data) as r:
             r.json()
     #Then create the other visualizations
     for v in sorted(query["visualizations"], key=lambda x: x["id"]):
@@ -177,9 +214,7 @@ def clone_query_visualization(client: Client, query, target_query):
             "query_plan": v["query_plan"],
             "query_id": target_query["id"],
         }
-        #Fix for GCP, too sensitive to timeout if we send too many queries
-        time.sleep(sleep_between_queries)
-        with requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data, timeout=120) as r:
+        with requests.post(client.url+"/api/2.0/preview/sql/visualizations", headers = client.headers, json=data) as r:
             new_v = r.json()
         if "id" not in new_v:
             raise Exception(f"couldn't create visualization - shouldn't happen {new_v} - {data}")
@@ -197,11 +232,11 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
 
     new_dashboard = None
     if "new_id" in dashboard_state:
-        with requests.get(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, timeout=120) as r:
+        with requests.get(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers) as r:
             existing_dashboard = r.json()
         if "options" in existing_dashboard and "moved_to_trash_at" not in existing_dashboard["options"]:
             logger.debug("  dashboard exists, updating it")
-            with requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data, timeout=120) as r:
+            with requests.post(client.url+"/api/2.0/preview/sql/dashboards/"+dashboard_state["new_id"], headers = client.headers, json=data) as r:
                 new_dashboard = r.json()
             if "widgets" not in new_dashboard:
                 logger.debug(f"ERROR: dashboard doesn't have widget, shouldn't happen - {new_dashboard}")
@@ -209,19 +244,17 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
                 #Drop all the widgets and re-create them
                 for widget in new_dashboard["widgets"]:
                     logger.debug(f"    deleting widget {widget['id']} from existing dashboard {new_dashboard['id']}")
-                    time.sleep(sleep_between_queries)
-                    with requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers, timeout=120) as r:
+                    with requests.delete(client.url+"/api/2.0/preview/sql/widgets/"+widget['id'], headers = client.headers) as r:
                         r.json()
         else:
             logger.debug("    couldn't find the dashboard defined in the state, it probably has been deleted.")
     if new_dashboard is None:
         logger.debug(f"  creating new dashboard...")
-        time.sleep(sleep_between_queries)
-        with requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data, timeout=120) as r:
+        with requests.post(client.url+"/api/2.0/preview/sql/dashboards", headers = client.headers, json=data) as r:
             new_dashboard = r.json()
         dashboard_state["new_id"] = new_dashboard["id"]
     if client.permisions_defined():
-        with requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions, timeout=120) as r:
+        with requests.post(client.url+"/api/2.0/preview/sql/permissions/dashboards/"+new_dashboard["id"], headers = client.headers, json=client.permissions) as r:
             permissions = r.json()
         logger.debug(f"     Dashboard permissions set to {permissions}")
 
@@ -239,8 +272,7 @@ def duplicate_dashboard(client: Client, dashboard, dashboard_state, parent):
             "options": widget["options"],
             "width": widget["width"]
         }
-        time.sleep(sleep_between_queries)
-        with requests.post(client.url+"/api/2.0/preview/sql/widgets", headers = client.headers, json=data, timeout=120) as r:
+        with requests.post(client.url+"/api/2.0/preview/sql/widgets", headers = client.headers, json=data) as r:
             r.json()
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
