@@ -90,7 +90,7 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
     for q in dashboard["queries"] :
         if "is_parameter_query" not in q or q["is_parameter_query"]:
             load_query(q)
-            tasks.append({
+            task = {
                 "task_key": "run_param_query_"+dashboard_state["queries"][q["id"]]["new_id"],
                 "sql_task": {
                     "query": {
@@ -98,11 +98,16 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
                     },
                     "warehouse_id": target_client.endpoint_id
                 }
-            })
+            }
+            #Make sure they are sequential as we can have table creation concurrent exception otherwise.
+            if len(tasks) > 0:
+                task["depends_on"] = {"task_key": tasks[len(tasks)-1]["task_key"]}
+            tasks.append(task)
     #Params requests now need to be run first. Starts a job to run them all and wait for the job...
     if len(tasks) > 0:
         print("Your dashboard has widgets. Widget queries need to be run first to be able to load other queries.")
         print("DBSQL-CLONE will now submit a job run to start the param queries. This will take a few minutes without serverless (few sec with serverless)...")
+        print(f"You can check the progress in {target_client.url}#job/runs")
         from datetime import datetime
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
@@ -127,7 +132,7 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
                         print("Param queries initialization successful. Resume dashboard import...")
                     break
                 else:
-                    print(f"waiting for param queries to run as they're need to import the next queries. run  {run}...")
+                    print(f"Waiting for parameter queries to run as they're needed to import the next queries ({run})...")
                     time.sleep(10)
 
 
