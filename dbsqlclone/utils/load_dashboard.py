@@ -76,8 +76,9 @@ def clone_dashboard(dashboard, target_client: Client, dashboard_state: dict = No
                     #if "$$value" in p:
                     #    del p["$$value"]
         new_query = clone_or_update_query(dashboard_state, q, target_client, parent)
-        logger.debug(new_query)
-        if "id" in new_query:
+        if "id" not in new_query:
+            print(f"Warning - query wasn't properly created, import might fail: {new_query}")
+        else:
             if target_client.permisions_defined():
                 with requests.post(target_client.url+"/api/2.0/preview/sql/permissions/queries/"+new_query["id"], headers = target_client.headers, json=target_client.permissions) as r:
                     permissions = r.json()
@@ -178,6 +179,7 @@ def clone_or_update_query(dashboard_state, q, target_client, parent):
         logger.debug(f"     cloning query {q_creation}...")
         with requests.post(target_client.url + "/api/2.0/preview/sql/queries", headers=target_client.headers,json=q_creation) as r:
             new_query = r.json()
+            logger.debug(f"     new query created: {new_query} {r.text} {r.status_code}...")
     return new_query
 
 
